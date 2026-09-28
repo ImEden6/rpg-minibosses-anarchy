@@ -1,0 +1,41 @@
+{
+	"schemaVersion": 1,
+	"id": "rpg-minibosses",
+	"version": "${version}",
+	"name": "ANARCHY - RPG Minibosses",
+	"description": "Find petrified adventurers in the wild!",
+	"authors": [
+		"cleannrooster/Forg!"
+	],
+	"contact": {
+		"homepage": "https://fabricmc.net/",
+		"sources": "https://github.com/FabricMC/fabric-example-mod"
+	},
+	"license": "CC0-1.0",
+	"icon": "assets/rpg-minibosses/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"com.cleannrooster.rpg_minibosses.RPGMinibosses"
+		],
+		"client":
+		[
+			"com.cleannrooster.rpg_minibosses.RPGMinibossesClient"
+		]
+	},
+	"mixins": [
+		"rpg-minibosses.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.14.21",
+		"minecraft": "~1.20.1",
+		"spell_engine": ">=0.15.4",
+		"extraspellattributes": "*",
+		"java": ">=17",
+		"fabric-api": "*",
+		"azurelib": ">=1.0.29"
+	},
+	"suggests": {
+		"another-mod": "*"
+	}
+}
