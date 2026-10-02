@@ -117,3 +117,11 @@ Comment-only changes on existing fields: Lesser Rogues spawn chance, lesser/grea
 - upstream doesn't build without `run/mods/` (gitignored), which must hold `spell_engine` and
   `extraspellattributes` jars. Used spell_engine-0.15.12+1.20.1 and extraspellattributes-1.3.2.
 - local variable names and exact formatting of new code are reconstructed; logic matches bytecode.
+- found at build compare: the fork jar has no `META-INF/jars/` and no `jars` block in fabric.mod.json,
+  so it was built without `include` on TinyConfig and MixinExtras. build.gradle now matches that.
+
+## build check
+
+Rebuilt `rpg-minibosses-1.0.0+1.20.1.jar` has the same entry list as the fork jar. All resources match
+byte for byte apart from line endings. Every class decompiles to the same output as the fork. Raw
+.class bytes still differ for the edited classes, since line number tables follow source layout.
