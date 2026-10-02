@@ -343,8 +343,7 @@ public class RPGMinibossesEntities {
             });
             if(spawnsNaturally(entry)) {
                 if(config.mult > 0) {
-                    int min = Math.max(1, config.spawnGroupMin);
-                    BiomeModifications.addSpawn(spawnBiomes(), SpawnGroup.MONSTER, entry.entityType, config.mult, min, Math.max(min, config.spawnGroupMax));
+                    BiomeModifications.addSpawn(spawnBiomes(), SpawnGroup.MONSTER, entry.entityType, config.mult, Math.max(1, config.spawnGroupMin), Math.max(Math.max(1, config.spawnGroupMin), config.spawnGroupMax));
                 }
                 minibosses.add(entry);
 
