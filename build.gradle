@@ -67,7 +67,6 @@ dependencies {
 
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-	implementation "com.github.ZsoltMolnarrr:TinyConfig:${project.tiny_config_version}"
 
 	modImplementation "mod.azure.azurelib:azurelib-fabric-1.20.1:1.0.29"
 
