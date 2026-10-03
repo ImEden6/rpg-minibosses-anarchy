@@ -78,7 +78,8 @@ dependencies {
 	modApi("me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}") {
 		exclude(group: "net.fabricmc.fabric-api")
 	}
-	modCompileOnly fileTree(dir: "run/mods", includes: ['*.jar'])
+	modImplementation("maven.modrinth:spell-engine:${project.spell_engine_version}")
+	modImplementation("maven.modrinth:extra-rpg-attributes:${project.extra_rpg_attributes_version}")
 
 	implementation("com.github.LlamaLad7:MixinExtras:${project.mixin_extras_version}")
 	modImplementation("dev.emi:trinkets:${project.trinkets_version}")
