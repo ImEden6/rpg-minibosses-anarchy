@@ -33,7 +33,8 @@
 		"extraspellattributes": ">=1.3.2",
 		"java": ">=17",
 		"fabric-api": "*",
-		"azurelib": ">=1.0.29"
+		"azurelib": ">=1.0.29",
+		"simplyswords": ">=1.70.2-"
 	},
 	"suggests": {
 		"another-mod": "*"

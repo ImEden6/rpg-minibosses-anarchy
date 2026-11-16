@@ -83,6 +83,16 @@ dependencies {
 
 	implementation("com.github.LlamaLad7:MixinExtras:${project.mixin_extras_version}")
 	modImplementation("dev.emi:trinkets:${project.trinkets_version}")
+
+	modImplementation("maven.modrinth:simply-swords:${project.simply_swords_version}")
+	modImplementation("maven.modrinth:architectury-api:${project.architectury_version}")
+	modImplementation("maven.modrinth:fzzy-config:${project.fzzy_config_version}")
+	modImplementation("maven.modrinth:simply-tooltips:${project.simply_tooltips_version}")
+	modRuntimeOnly("net.fabricmc:fabric-language-kotlin:${project.fabric_kotlin_version}")
+	modRuntimeOnly("com.github.ZsoltMolnarrr:TinyConfig:${project.tiny_config_version}")
+	runtimeOnly("net.peanuuutz.tomlkt:tomlkt-jvm:0.3.7")
+	modRuntimeOnly("me.lucko:fabric-permissions-api:0.3.1")
+	runtimeOnly("blue.endless:jankson:1.2.3")
 }
 
 processResources {
