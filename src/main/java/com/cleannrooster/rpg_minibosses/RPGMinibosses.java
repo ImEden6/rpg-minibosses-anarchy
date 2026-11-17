@@ -8,6 +8,7 @@ import com.cleannrooster.rpg_minibosses.entity.MagusPrimeEntity;
 import com.cleannrooster.rpg_minibosses.entity.OrbEntity;
 import com.cleannrooster.rpg_minibosses.entity.RPGMinibossesEntities;
 import com.cleannrooster.rpg_minibosses.item.SummonHorn;
+import com.cleannrooster.rpg_minibosses.loadout.Loadouts;
 import com.cleannrooster.rpg_minibosses.patrols.Patrol;
 import net.fabricmc.api.ModInitializer;
 
@@ -75,6 +76,7 @@ public class RPGMinibosses implements ModInitializer {
 		Registry.register(Registries.CUSTOM_STAT, Identifier.of(MOD_ID,"benevolence"), BENEVOLENCE);
 
 		RPGMinibossesEntities.register();
+		Loadouts.register();
 		LAVOSHORN = new SummonHorn<MagusPrimeEntity>(new Item.Settings().maxCount(1).maxDamage(1),RPGMinibossesEntities.MAGuS_PRIME.entityType, InstrumentTags.GOAT_HORNS);
 		Registry.register(Registries.ITEM,Identifier.of(MOD_ID,"lavos_horn"),LAVOSHORN);
 		ItemGroupEvents.modifyEntriesEvent(RPGMinibossesEntities.KEY).register((content) -> {
