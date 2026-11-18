@@ -256,6 +256,20 @@ public class LoadoutTests implements FabricGameTest {
     }
 
     @GameTest(templateName = EMPTY_STRUCTURE)
+    public void disabledEntryDoesNotParry(TestContext context) {
+        ServerWorld world = context.getWorld();
+        Loadout off = loadout("{\"mainhand\":[{\"item\":\"simplyswords:stormbringer\",\"ability\":{\"enabled\":false}}]}");
+        Loadout on = loadout("{\"mainhand\":[{\"item\":\"simplyswords:stormbringer\"}]}");
+        MobEntity mob = fighter(context, unique("stormbringer"), 2);
+        HeldAbilities abilities = new HeldAbilities(mob);
+        check(!abilities.openParry(world, off), "disabled entry should not open the parry");
+        check(WeaponAbilityCooldownManager.isCoolingDown(world, mob, mob.getMainHandStack()), "disabled entry should keep the sword locked");
+        check(abilities.openParry(world, on), "enabled entry should open the parry");
+        check(!WeaponAbilityCooldownManager.isCoolingDown(world, mob, mob.getMainHandStack()), "open parry should unlock the sword");
+        context.complete();
+    }
+
+    @GameTest(templateName = EMPTY_STRUCTURE)
     public void offhandAbilityFires(TestContext context) {
         ServerWorld world = context.getWorld();
         Loadout loadout = loadout("{\"offhand\":[{\"item\":\"simplyswords:shadowsting\",\"ability\":{\"cooldown\":80,\"chance\":1,\"interval\":1}}]}");

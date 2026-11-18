@@ -601,7 +601,7 @@ public class MinibossEntity extends PathAwareEntity implements Tameable, GeoEnti
         if(Synchronized.effectsOf(this).stream().anyMatch(effect -> effect.effect() == this.getIntroEffect().value())){
             return false;
         }
-        if(this.getWorld() instanceof ServerWorld serverWorld && heldAbilities.openParry(serverWorld)){
+        if(this.getWorld() instanceof ServerWorld serverWorld && heldAbilities.openParry(serverWorld, Loadouts.get(this.getType()))){
             boolean damaged = super.damage(source, amount);
             heldAbilities.closeParry(serverWorld, Loadouts.get(this.getType()));
             return damaged;

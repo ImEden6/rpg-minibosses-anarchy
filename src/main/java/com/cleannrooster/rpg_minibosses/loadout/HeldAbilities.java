@@ -74,12 +74,13 @@ public class HeldAbilities {
         return readyAt[hand.ordinal()];
     }
 
-    public boolean openParry(ServerWorld world) {
+    public boolean openParry(ServerWorld world, @Nullable Loadout loadout) {
         ItemStack stack = mob.getMainHandStack();
         if (!isSword(stack)) {
             return false;
         }
-        if (!RPGMinibossesEntities.config.heldAbilities || readyAt[0] > world.getTime()) {
+        LoadoutEntry entry = loadout == null ? null : loadout.find(EquipmentSlot.MAINHAND, stack);
+        if (!RPGMinibossesEntities.config.heldAbilities || entry != null && !entry.ability().enabled() || readyAt[0] > world.getTime()) {
             WeaponAbilityCooldownManager.setCooldown(world, mob, stack, 2);
             return false;
         }
