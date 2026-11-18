@@ -61,7 +61,7 @@ Entry fields, all optional except `item` or `tag`:
 
 | field | default | what it does |
 |---|---|---|
-| `enabled` | `true` | set `false` and the boss never uses it on its own. Stormbringer still parries |
+| `enabled` | `true` | set `false` and the boss never uses the ability, Stormbringer's parry included |
 | `cooldown` | the Simply Swords or spell cooldown | ticks before it can fire again |
 | `min_range` | `0` | target has to be at least this far away |
 | `max_range` | `10` | and no farther than this |
@@ -71,6 +71,6 @@ Entry fields, all optional except `item` or `tag`:
 
 Simply Swords uniques use their own active ability. Anything else casts from `spells`, or from the Spell Engine spells on the item if `spells` is empty. Items with neither don't do anything special.
 
-Stormbringer still parries on its own, and a parry puts the same cooldown on it.
+Stormbringer also parries when hit, and a parry puts the same cooldown on it.
 
 Two server config options cover all of this. `heldAbilities` turns held abilities off completely. `abilityCooldownMultiplier` scales every cooldown, so `0.5` brings abilities back twice as fast.
