@@ -3,6 +3,10 @@ package com.cleannrooster.rpg_minibosses.entity;
 import com.cleannrooster.rpg_minibosses.RPGMinibosses;
 import com.cleannrooster.rpg_minibosses.client.entity.effect.Effects;
 import com.cleannrooster.rpg_minibosses.entity.AI.*;
+import com.cleannrooster.rpg_minibosses.loadout.HeldAbilities;
+import com.cleannrooster.rpg_minibosses.loadout.Loadout;
+import com.cleannrooster.rpg_minibosses.loadout.LoadoutEntry;
+import com.cleannrooster.rpg_minibosses.loadout.Loadouts;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -81,6 +85,7 @@ import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.village.*;
 import net.minecraft.world.*;
 import net.spell_engine.api.effect.Synchronized;
+import net.sweenus.simplyswords.api.AwakeningApi;
 import net.spell_engine.api.spell.Sound;
 import net.spell_engine.utils.SoundHelper;
 import org.apache.commons.lang3.tuple.Pair;
@@ -135,7 +140,7 @@ public class MinibossEntity extends PathAwareEntity implements Tameable, GeoEnti
 
     }
 
-    List<Item> bonusList = List.of();
+    private final HeldAbilities heldAbilities = new HeldAbilities(this);
 
     @Override
     public Text getName() {
@@ -265,26 +270,19 @@ public class MinibossEntity extends PathAwareEntity implements Tameable, GeoEnti
         super.onSpawnPacket(packet);
 
     }
-    public void generateAndEquipLoot(EquipmentSlot slot, int attempts){
-
-    }
-
-    public void checkAndEquipLoot(ItemStack stack,EquipmentSlot slot){
-        if(this.bonusList.contains(stack.getItem())){
-
-            if(!this.hasStackEquipped(slot)){
-                this.equipStack(slot,stack);
-            }
+    public void generateAndEquipLoot(EquipmentSlot slot){
+        Loadout loadout = Loadouts.get(this.getType());
+        LoadoutEntry entry = loadout == null ? null : loadout.roll(slot, this.getRandom());
+        if(entry != null){
+            this.equipStack(slot, entry.create(this.getRandom()));
         }
     }
 
-
+    public HeldAbilities getHeldAbilities(){
+        return heldAbilities;
+    }
 
     public ItemStack getMainWeapon(){
-        return ItemStack.EMPTY;
-
-    }
-    public ItemStack getBackWeapon(){
         return ItemStack.EMPTY;
 
     }
@@ -406,15 +404,18 @@ public class MinibossEntity extends PathAwareEntity implements Tameable, GeoEnti
         }
         if(!this.getDataTracker().get(HAS_ROLLED) && this.getServer() != null) {
             if(!skipMainHand()) {
-                this.generateAndEquipLoot(EquipmentSlot.MAINHAND, 8);
+                this.generateAndEquipLoot(EquipmentSlot.MAINHAND);
             }
             if(!skipOffHand()) {
-                this.generateAndEquipLoot(EquipmentSlot.OFFHAND, 8);
+                this.generateAndEquipLoot(EquipmentSlot.OFFHAND);
             }
             if(getMainHandStack().isEmpty()){
                 this.equipStack(EquipmentSlot.MAINHAND,this.getMainWeapon());
             }
             this.getDataTracker().set(HAS_ROLLED,true);
+        }
+        if(this.getWorld() instanceof ServerWorld serverWorld && this.notPetrified()){
+            heldAbilities.tick(serverWorld, Loadouts.get(this.getType()));
         }
         super.tick();
         if(this.getWorld() instanceof ServerWorld){
@@ -499,7 +500,19 @@ public class MinibossEntity extends PathAwareEntity implements Tameable, GeoEnti
 
     @Override
     protected float getDropChance(EquipmentSlot slot) {
+        Loadout loadout = Loadouts.get(this.getType());
+        LoadoutEntry entry = loadout == null ? null : loadout.find(slot, this.getEquippedStack(slot));
+        if(entry != null && entry.dropChance() != null){
+            return entry.dropChance();
+        }
         return RPGMinibossesEntities.config.equipmentDropChance;
+    }
+
+    @Override
+    protected void dropEquipment(DamageSource source, int lootingMultiplier, boolean allowDrops) {
+        AwakeningApi.setLevel(this.getMainHandStack(), 0);
+        AwakeningApi.setLevel(this.getOffHandStack(), 0);
+        super.dropEquipment(source, lootingMultiplier, allowDrops);
     }
 
 
@@ -585,7 +598,15 @@ public class MinibossEntity extends PathAwareEntity implements Tameable, GeoEnti
             }
             return false;
         }
-        return  (  Synchronized.effectsOf(this).stream().noneMatch(effect -> effect.effect() == this.getIntroEffect().value()) && super.damage(source, amount));
+        if(Synchronized.effectsOf(this).stream().anyMatch(effect -> effect.effect() == this.getIntroEffect().value())){
+            return false;
+        }
+        if(this.getWorld() instanceof ServerWorld serverWorld && heldAbilities.openParry(serverWorld)){
+            boolean damaged = super.damage(source, amount);
+            heldAbilities.closeParry(serverWorld, Loadouts.get(this.getType()));
+            return damaged;
+        }
+        return super.damage(source, amount);
     }
 
 

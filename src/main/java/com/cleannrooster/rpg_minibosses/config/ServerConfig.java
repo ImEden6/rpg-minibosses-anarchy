@@ -276,5 +276,9 @@ public class ServerConfig  implements ConfigData {
     public int infamyPerProvoke = 1;
     @Comment("Cultists attack players whose infamy exceeds their benevolence by more than this (ignored when trueAnarchy is on)")
     public int infamyThreshold = 5;
+    @Comment("Minibosses use the abilities of the weapons they hold (Simply Swords uniques, Spell Engine spells)")
+    public boolean heldAbilities = true;
+    @Comment("Multiplies every held weapon ability cooldown. 0.5 means abilities come back twice as fast")
+    public float abilityCooldownMultiplier = 1.0F;
 
 }

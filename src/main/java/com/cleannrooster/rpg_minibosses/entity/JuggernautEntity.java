@@ -57,67 +57,25 @@ import java.util.Optional;
 
 public class JuggernautEntity extends MinibossEntity{
     private boolean performing;
-    List<Item> bonusList;
 
 
     protected JuggernautEntity(EntityType<? extends PathAwareEntity> entityType, World world) {
         super(entityType, world);
-        super.bonusList = Registries.ITEM.stream().filter(item -> {return
-                (new ItemStack(item).isIn(TagKey.of(RegistryKeys.ITEM,Identifier.of("rpg_series","loot_tier/tier_2_weapons")))
-                        ||new ItemStack(item).isIn(TagKey.of(RegistryKeys.ITEM,Identifier.of("rpg_series","loot_tier/tier_3_weapons")))
-                        || new ItemStack(item).isIn(TagKey.of(RegistryKeys.ITEM,Identifier.of("rpg_series","loot_tier/tier_4_weapons")))
-                        || new ItemStack(item).isIn(TagKey.of(RegistryKeys.ITEM,Identifier.of("rpg_series","loot_tier/tier_5_weapons"))))
-                        && ( new ItemStack(item).isIn(TagKey.of(RegistryKeys.ITEM,Identifier.of("rpg_series","weapon_type/hammer"))))
-                ;}).toList();
 
     }
     protected JuggernautEntity(EntityType<? extends PathAwareEntity> entityType, World world,boolean lesser) {
         super(entityType, world);
         if(lesser) {
-            super.bonusList = Registries.ITEM.stream().filter(item -> {
-                return
-                        (new ItemStack(item).isIn(TagKey.of(RegistryKeys.ITEM, Identifier.of("rpg_series", "loot_tier/tier_2_weapons")))
-                                || new ItemStack(item).isIn(TagKey.of(RegistryKeys.ITEM, Identifier.of("rpg_series", "loot_tier/tier_1_weapons"))))
-                                && (new ItemStack(item).isIn(TagKey.of(RegistryKeys.ITEM, Identifier.of("rpg_series", "weapon_type/glaive")))
-                        || new ItemStack(item).isIn(TagKey.of(RegistryKeys.ITEM, Identifier.of("rpg_series", "weapon_type/double_axe"))))
-                        ;
-            }).toList();
             this.getDataTracker().set(MinibossEntity.LESSER,true);
 
-        }
-        else{
-            super.bonusList = Registries.ITEM.stream().filter(item -> {return
-                    (new ItemStack(item).isIn(TagKey.of(RegistryKeys.ITEM,Identifier.of("rpg_series","loot_tier/tier_2_weapons")))
-                            ||new ItemStack(item).isIn(TagKey.of(RegistryKeys.ITEM,Identifier.of("rpg_series","loot_tier/tier_3_weapons")))
-                            || new ItemStack(item).isIn(TagKey.of(RegistryKeys.ITEM,Identifier.of("rpg_series","loot_tier/tier_4_weapons")))
-                            || new ItemStack(item).isIn(TagKey.of(RegistryKeys.ITEM,Identifier.of("rpg_series","loot_tier/tier_5_weapons"))))
-                            && ( new ItemStack(item).isIn(TagKey.of(RegistryKeys.ITEM,Identifier.of("rpg_series","weapon_type/hammer"))))
-                    ;}).toList();
         }
 
     }
     protected JuggernautEntity(EntityType<? extends PathAwareEntity> entityType, World world, boolean lesser, float SpawnCoeff) {
         super(entityType, world,SpawnCoeff);
         if(lesser) {
-            super.bonusList = Registries.ITEM.stream().filter(item -> {
-                return
-                        (new ItemStack(item).isIn(TagKey.of(RegistryKeys.ITEM, Identifier.of("rpg_series", "loot_tier/tier_2_weapons")))
-                                || new ItemStack(item).isIn(TagKey.of(RegistryKeys.ITEM, Identifier.of("rpg_series", "loot_tier/tier_1_weapons"))))
-                                && (new ItemStack(item).isIn(TagKey.of(RegistryKeys.ITEM, Identifier.of("rpg_series", "weapon_type/glaive")))
-                                || new ItemStack(item).isIn(TagKey.of(RegistryKeys.ITEM, Identifier.of("rpg_series", "weapon_type/double_axe"))))
-                        ;
-            }).toList();
             this.getDataTracker().set(MinibossEntity.LESSER,true);
 
-        }
-        else{
-            super.bonusList = Registries.ITEM.stream().filter(item -> {return
-                    (new ItemStack(item).isIn(TagKey.of(RegistryKeys.ITEM,Identifier.of("rpg_series","loot_tier/tier_2_weapons")))
-                            ||new ItemStack(item).isIn(TagKey.of(RegistryKeys.ITEM,Identifier.of("rpg_series","loot_tier/tier_3_weapons")))
-                            || new ItemStack(item).isIn(TagKey.of(RegistryKeys.ITEM,Identifier.of("rpg_series","loot_tier/tier_4_weapons")))
-                            || new ItemStack(item).isIn(TagKey.of(RegistryKeys.ITEM,Identifier.of("rpg_series","loot_tier/tier_5_weapons"))))
-                            && ( new ItemStack(item).isIn(TagKey.of(RegistryKeys.ITEM,Identifier.of("rpg_series","weapon_type/hammer"))))
-                    ;}).toList();
         }
 
     }
