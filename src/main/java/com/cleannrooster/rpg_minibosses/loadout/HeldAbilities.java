@@ -37,6 +37,7 @@ public class HeldAbilities {
     private static final Set<Identifier> MISSING_SPELLS = new HashSet<>();
     private final MobEntity mob;
     private final long[] readyAt = new long[2];
+    private final int[] rolled = {-1, -1};
 
     public HeldAbilities(MobEntity mob) {
         this.mob = mob;
@@ -58,7 +59,7 @@ public class HeldAbilities {
             if (stack.isEmpty() || readyAt[hand.ordinal()] > world.getTime()) {
                 continue;
             }
-            LoadoutEntry entry = loadout == null ? null : loadout.find(slot(hand), stack);
+            LoadoutEntry entry = entry(loadout, hand);
             AbilitySettings settings = settings(entry);
             if (!settings.enabled() || mob.age % settings.interval() != 0) {
                 continue;
@@ -80,12 +81,21 @@ public class HeldAbilities {
         return readyAt[hand.ordinal()];
     }
 
+    public void rolled(Hand hand, int index) {
+        rolled[hand.ordinal()] = index;
+    }
+
+    @Nullable
+    public LoadoutEntry entry(@Nullable Loadout loadout, Hand hand) {
+        return loadout == null ? null : loadout.find(slot(hand), mob.getStackInHand(hand), rolled[hand.ordinal()]);
+    }
+
     public boolean openParry(ServerWorld world, @Nullable Loadout loadout) {
         ItemStack stack = mob.getMainHandStack();
         if (!isSword(stack)) {
             return false;
         }
-        AbilitySettings settings = settings(loadout == null ? null : loadout.find(EquipmentSlot.MAINHAND, stack));
+        AbilitySettings settings = settings(entry(loadout, Hand.MAIN_HAND));
         if (!RPGMinibossesEntities.config.heldAbilities || !settings.enabled() || readyAt[0] > world.getTime()) {
             WeaponAbilityCooldownManager.setCooldown(world, mob, stack, 2);
             return false;
@@ -97,7 +107,7 @@ public class HeldAbilities {
     public void closeParry(ServerWorld world, @Nullable Loadout loadout) {
         ItemStack stack = mob.getMainHandStack();
         if (WeaponAbilityCooldownManager.isCoolingDown(world, mob, stack)) {
-            AbilitySettings settings = settings(loadout == null ? null : loadout.find(EquipmentSlot.MAINHAND, stack));
+            AbilitySettings settings = settings(entry(loadout, Hand.MAIN_HAND));
             readyAt[0] = readyTime(world, swordCooldown(context(world, stack, Hand.MAIN_HAND, mob.getTarget()), settings));
         }
         WeaponAbilityCooldownManager.setCooldown(world, mob, stack, 2);
@@ -182,11 +192,14 @@ public class HeldAbilities {
 
     public void write(NbtCompound nbt) {
         nbt.putLongArray("HeldAbilityReadyAt", readyAt);
+        nbt.putIntArray("LoadoutEntries", rolled);
     }
 
     public void read(NbtCompound nbt) {
         long[] saved = nbt.getLongArray("HeldAbilityReadyAt");
         System.arraycopy(saved, 0, readyAt, 0, Math.min(saved.length, readyAt.length));
+        int[] entries = nbt.getIntArray("LoadoutEntries");
+        System.arraycopy(entries, 0, rolled, 0, Math.min(entries.length, rolled.length));
     }
 
     private static AbilitySettings settings(@Nullable LoadoutEntry entry) {

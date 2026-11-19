@@ -275,6 +275,7 @@ public class MinibossEntity extends PathAwareEntity implements Tameable, GeoEnti
         LoadoutEntry entry = loadout == null ? null : loadout.roll(slot, this.getRandom());
         if(entry != null){
             this.equipStack(slot, entry.create(this.getRandom()));
+            heldAbilities.rolled(slot == EquipmentSlot.MAINHAND ? Hand.MAIN_HAND : Hand.OFF_HAND, loadout.pool(slot).indexOf(entry));
         }
     }
 
@@ -501,7 +502,11 @@ public class MinibossEntity extends PathAwareEntity implements Tameable, GeoEnti
     @Override
     protected float getDropChance(EquipmentSlot slot) {
         Loadout loadout = Loadouts.get(this.getType());
-        LoadoutEntry entry = loadout == null ? null : loadout.find(slot, this.getEquippedStack(slot));
+        LoadoutEntry entry = switch (slot) {
+            case MAINHAND -> heldAbilities.entry(loadout, Hand.MAIN_HAND);
+            case OFFHAND -> heldAbilities.entry(loadout, Hand.OFF_HAND);
+            default -> null;
+        };
         if(entry != null && entry.dropChance() != null){
             return entry.dropChance();
         }

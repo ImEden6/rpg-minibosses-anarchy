@@ -59,6 +59,15 @@ public record Loadout(List<LoadoutEntry> mainhand, List<LoadoutEntry> offhand) {
     }
 
     @Nullable
+    public LoadoutEntry find(EquipmentSlot slot, ItemStack stack, int rolled) {
+        List<LoadoutEntry> entries = pool(slot);
+        if (rolled >= 0 && rolled < entries.size() && entries.get(rolled).matches(stack)) {
+            return entries.get(rolled);
+        }
+        return find(slot, stack);
+    }
+
+    @Nullable
     public LoadoutEntry find(EquipmentSlot slot, ItemStack stack) {
         if (stack.isEmpty()) {
             return null;
