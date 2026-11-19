@@ -8,6 +8,7 @@ import com.cleannrooster.rpg_minibosses.loadout.Loadout;
 import com.cleannrooster.rpg_minibosses.loadout.LoadoutEntry;
 import com.cleannrooster.rpg_minibosses.loadout.Loadouts;
 import com.cleannrooster.rpg_minibosses.loadout.SimplySwords;
+import com.cleannrooster.rpg_minibosses.loadout.SpellMotion;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -510,6 +511,12 @@ public class MinibossEntity extends PathAwareEntity implements Tameable, GeoEnti
         return false;
     }
     public void shootSpellArrow(LivingEntity target, SpellInfo info){
+    }
+    public boolean busy(){
+        return false;
+    }
+    public int spellAnimation(SpellMotion motion){
+        return 0;
     }
 
     @Override

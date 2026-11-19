@@ -123,6 +123,9 @@ public class HeldAbilities {
     }
 
     private int castSpell(ServerWorld world, ItemStack stack, LivingEntity target, @Nullable LoadoutEntry entry, AbilitySettings settings) {
+        if (mob instanceof MinibossEntity boss && boss.busy()) {
+            return -1;
+        }
         Set<Identifier> ids = new LinkedHashSet<>(entry != null && !entry.spells().isEmpty() ? entry.spells() : spellsOf(stack));
         if (entry != null) {
             for (Identifier pool : entry.spellPools()) {
@@ -146,6 +149,25 @@ public class HeldAbilities {
         SpellInfo info = usable.get(mob.getRandom().nextInt(usable.size()));
         Spell spell = info.spell();
         mob.getLookControl().lookAt(target);
+        int windup = mob instanceof MinibossEntity boss ? boss.spellAnimation(SpellMotion.of(spell)) : 0;
+        if (windup > 0) {
+            ((WorldScheduler) world).schedule(windup, () -> {
+                if (mob.isAlive() && target.isAlive() && canCast(spell, target)) {
+                    mob.getLookControl().lookAt(target);
+                    release(world, target, info);
+                }
+            });
+        } else {
+            release(world, target, info);
+        }
+        if (settings.cooldown() != null) {
+            return settings.cooldown();
+        }
+        return Math.max(20, Math.round(SpellHelper.getCooldownDuration(mob, spell, stack) * 20));
+    }
+
+    private void release(ServerWorld world, LivingEntity target, SpellInfo info) {
+        Spell spell = info.spell();
         if (shootsArrow(spell)) {
             shootArrows(world, (MinibossEntity) mob, target, info);
         } else {
@@ -165,7 +187,7 @@ public class HeldAbilities {
                     }
                 }
                 default -> {
-                    return -1;
+                    return;
                 }
             }
         }
@@ -173,10 +195,6 @@ public class HeldAbilities {
             ParticleHelper.sendBatches(mob, spell.release.particles);
             SoundHelper.playSound(world, mob, spell.release.sound);
         }
-        if (settings.cooldown() != null) {
-            return settings.cooldown();
-        }
-        return Math.max(20, Math.round(SpellHelper.getCooldownDuration(mob, spell, stack) * 20));
     }
 
     private void shootArrows(ServerWorld world, MinibossEntity boss, LivingEntity target, SpellInfo info) {
@@ -215,7 +233,7 @@ public class HeldAbilities {
         return type != Spell.Release.Target.Type.BEAM && type != Spell.Release.Target.Type.CURSOR || mob.canSee(target);
     }
 
-    private static boolean shootsArrow(Spell spell) {
+    static boolean shootsArrow(Spell spell) {
         return spell.mode == Spell.Mode.ITEM_USE && spell.arrow_perks != null
                 || spell.release != null && spell.release.target != null && spell.release.target.type == Spell.Release.Target.Type.SHOOT_ARROW;
     }
