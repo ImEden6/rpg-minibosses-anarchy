@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [1.2.0] - 2026-11-19
 
 ### Added
 - Mercenary loadouts can give it any bow or crossbow. It shoots with the weapon's enchantments and Ranged Weapon API damage, and the held weapon shows instead of its built-in crossbow.
