@@ -123,7 +123,8 @@ public class HeldAbilities {
     }
 
     private int castSpell(ServerWorld world, ItemStack stack, LivingEntity target, @Nullable LoadoutEntry entry, AbilitySettings settings) {
-        if (mob instanceof MinibossEntity boss && boss.busy()) {
+        MinibossEntity boss = RPGMinibossesEntities.config.spellAnimations && mob instanceof MinibossEntity miniboss ? miniboss : null;
+        if (boss != null && boss.busy()) {
             return -1;
         }
         Set<Identifier> ids = new LinkedHashSet<>(entry != null && !entry.spells().isEmpty() ? entry.spells() : spellsOf(stack));
@@ -149,7 +150,7 @@ public class HeldAbilities {
         SpellInfo info = usable.get(mob.getRandom().nextInt(usable.size()));
         Spell spell = info.spell();
         mob.getLookControl().lookAt(target);
-        int windup = mob instanceof MinibossEntity boss ? boss.spellAnimation(SpellMotion.of(spell)) : 0;
+        int windup = boss != null ? boss.spellAnimation(SpellMotion.of(spell)) : 0;
         if (windup > 0) {
             ((WorldScheduler) world).schedule(windup, () -> {
                 if (mob.isAlive() && target.isAlive() && canCast(spell, target)) {

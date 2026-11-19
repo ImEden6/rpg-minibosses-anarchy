@@ -280,5 +280,7 @@ public class ServerConfig  implements ConfigData {
     public boolean heldAbilities = true;
     @Comment("Multiplies every held weapon ability cooldown. 0.5 means abilities come back twice as fast")
     public float abilityCooldownMultiplier = 1.0F;
+    @Comment("Minibosses play one of their own moves when they cast a held spell, and the spell lands on its hit frame. Off casts instantly with no animation")
+    public boolean spellAnimations = true;
 
 }
