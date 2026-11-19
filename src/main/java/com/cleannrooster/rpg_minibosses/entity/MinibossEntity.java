@@ -997,6 +997,9 @@ public class MinibossEntity extends PathAwareEntity implements Tameable, GeoEnti
     }
     public void writeCustomDataToNbt(NbtCompound nbt) {
         super.writeCustomDataToNbt(nbt);
+        if (!super.isAiDisabled()) {
+            nbt.remove("NoAI");
+        }
         if (this.getOwnerUuid() != null) {
             nbt.putUuid("Owner", this.getOwnerUuid());
         }

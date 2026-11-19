@@ -20,6 +20,7 @@
 ### Fixed
 - Simply Swords and RPG Series weapons held by Juggernauts and Templars aren't scaled up anymore. Their models are already big, so they looked huge.
 - A boss that cast Death Knights' Remorseless Winter crashed when the effect ran out. It works on bosses now.
+- Bosses saved while petrified or downed came back with their AI off for good. Ones already stuck from an older version stay stuck, run `/execute as @e[type=!player,nbt={NoAI:1b},distance=..30] run data merge entity @s {NoAI:0b}` near them to wake them up.
 
 ## [1.1.0] - 2026-11-19
 

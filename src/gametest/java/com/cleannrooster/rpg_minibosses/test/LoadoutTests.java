@@ -895,4 +895,19 @@ public class LoadoutTests implements FabricGameTest {
         check(!archmage.busy(), "boss played a move with animations off");
         context.complete();
     }
+
+    @GameTest(templateName = EMPTY_STRUCTURE)
+    public void petrifiedBossDoesNotSaveNoAi(TestContext context) {
+        ArchmageFireEntity archmage = boss(context, RPGMinibossesEntities.ARCHMAGE_FIRE_ENTITY_ENTRY.entityType(), 0, 0);
+        archmage.setAiDisabled(false);
+        archmage.applyIntroEffect();
+        context.runAtTick(2, () -> {
+            check(archmage.isAiDisabled(), "petrified boss still has ai");
+            check(!archmage.writeNbt(new NbtCompound()).contains("NoAI"), "petrify got saved as NoAI");
+            archmage.setAiDisabled(true);
+            check(archmage.writeNbt(new NbtCompound()).getBoolean("NoAI"), "real NoAI didnt get saved");
+            context.complete();
+        });
+    }
+
 }
