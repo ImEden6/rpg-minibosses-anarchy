@@ -987,6 +987,8 @@ public class MinibossEntity extends PathAwareEntity implements Tameable, GeoEnti
         if (nbt.contains("exileName")) {
             this.getDataTracker().set(NAME,nbt.getInt("exileName"));
         }
+        this.getDataTracker().set(DOWN, nbt.getBoolean("Down"));
+        this.getDataTracker().set(HAS_ROLLED, nbt.getBoolean("HasRolled"));
         if (uUID != null) {
             this.setOwnerUuid(uUID);
 
@@ -1008,9 +1010,9 @@ public class MinibossEntity extends PathAwareEntity implements Tameable, GeoEnti
         }
          nbt.putBoolean("shouldWander",this.shouldWander);
         nbt.putBoolean("closeWander",this.closeWander);
-        if (nbt.contains("exileName")) {
-            nbt.putInt("exileName",this.dataTracker.get(NAME));
-        }
+        nbt.putInt("exileName",this.dataTracker.get(NAME));
+        nbt.putBoolean("Down", this.dataTracker.get(DOWN));
+        nbt.putBoolean("HasRolled", this.dataTracker.get(HAS_ROLLED));
         nbt.putBoolean("Sitting", this.sitting);
         heldAbilities.write(nbt);
     }

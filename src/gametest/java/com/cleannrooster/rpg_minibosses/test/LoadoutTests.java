@@ -910,4 +910,21 @@ public class LoadoutTests implements FabricGameTest {
         });
     }
 
+    @GameTest(templateName = EMPTY_STRUCTURE)
+    public void downedBossSurvivesReload(TestContext context) {
+        JuggernautEntity juggernaut = boss(context, RPGMinibossesEntities.JUGGERNAUT_ENTITY_ENTRY.entityType(), 0, 0);
+        juggernaut.setAiDisabled(false);
+        juggernaut.getDataTracker().set(MinibossEntity.DOWN, true);
+        context.runAtTick(2, () -> {
+            NbtCompound saved = juggernaut.writeNbt(new NbtCompound());
+            check(!saved.contains("NoAI"), "down got saved as NoAI");
+            JuggernautEntity loaded = RPGMinibossesEntities.JUGGERNAUT_ENTITY_ENTRY.entityType().create(context.getWorld());
+            loaded.readNbt(saved);
+            check(loaded.getDataTracker().get(MinibossEntity.DOWN), "down lost on reload");
+            check(loaded.isAiDisabled(), "reloaded downed boss has ai");
+            check(loaded.getMainHandStack().isOf(juggernaut.getMainHandStack().getItem()), "weapon changed on reload");
+            check(loaded.writeNbt(new NbtCompound()).getInt("exileName") == juggernaut.writeNbt(new NbtCompound()).getInt("exileName"), "name lost on reload");
+            context.complete();
+        });
+    }
 }
