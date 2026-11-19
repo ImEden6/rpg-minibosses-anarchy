@@ -160,8 +160,6 @@ public class ArtilleristCrossbowAttackGoal<T extends ArtilleristEntity & RangedA
                     this.stage = ArtilleristCrossbowAttackGoal.Stage.READY_TO_ATTACK;
 
             }
-            Hand hand = ProjectileUtil.getHandPossiblyHolding(this.actor, Items.CROSSBOW);
-            ItemStack itemStack = this.actor.getStackInHand(hand);
 
 
             if (!this.actor.performing   &&  bl   ) {

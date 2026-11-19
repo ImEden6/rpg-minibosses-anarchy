@@ -46,7 +46,10 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
 import net.spell_engine.api.spell.ExternalSpellSchools;
+import net.spell_engine.api.spell.Spell;
+import net.spell_engine.api.spell.SpellInfo;
 import net.spell_engine.internals.SpellHelper;
+import net.spell_engine.internals.arrow.ArrowExtension;
 import net.spell_power.api.SpellPower;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -263,7 +266,7 @@ public class ArtilleristEntity extends MinibossEntity implements RangedAttackMob
     @Override
     public void shoot(LivingEntity target, ItemStack crossbow, ProjectileEntity projectile, float multiShotSpray) {
 
-        this.shoot(target,speed);
+        this.shoot(this, target, projectile, multiShotSpray, 1.6F);
     }
 
     static {
@@ -302,6 +305,9 @@ public class ArtilleristEntity extends MinibossEntity implements RangedAttackMob
     }
 
     public void shoot(LivingEntity entity, float speed) {
+        if (!this.isAlive()) {
+            return;
+        }
         ItemStack itemStack = this.getMainHandStack();
         float fs = getSoundPitch();
 
@@ -310,6 +316,25 @@ public class ArtilleristEntity extends MinibossEntity implements RangedAttackMob
 
         this.postShoot();
     }
+    @Override
+    public boolean shootsSpellArrows() {
+        return true;
+    }
+
+    @Override
+    public void shootSpellArrow(LivingEntity target, SpellInfo info) {
+        PersistentProjectileEntity arrow = createArrow(getWorld(), this, getMainHandStack(), new ItemStack(Items.ARROW));
+        arrow.pickupType = PersistentProjectileEntity.PickupPermission.CREATIVE_ONLY;
+        shoot(this, target, arrow, 0, 1.6F);
+        Spell.Release release = info.spell().release;
+        if (release != null && release.target.shoot_arrow != null) {
+            arrow.setDamage(arrow.getDamage() * release.target.shoot_arrow.damage_multiplier);
+            arrow.setCritical(release.target.shoot_arrow.arrow_critical_strike);
+        }
+        ((ArrowExtension) arrow).applyArrowPerks(info);
+        getWorld().spawnEntity(arrow);
+    }
+
     private  void shoot(World world, LivingEntity shooter, Hand hand, ItemStack crossbow, ItemStack projectile, float soundPitch, boolean creative, float speed, float divergence, float simulated) {
         if (!world.isClient) {
             boolean bl = projectile.isOf(Items.FIREWORK_ROCKET);
