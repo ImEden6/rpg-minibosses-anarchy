@@ -1,6 +1,6 @@
 package com.cleannrooster.rpg_minibosses.loadout;
 
-import com.cleannrooster.rpg_minibosses.entity.MinibossEntity;
+import com.cleannrooster.rpg_minibosses.RPGMinibosses;
 import com.cleannrooster.rpg_minibosses.entity.RPGMinibossesEntities;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
@@ -28,9 +28,13 @@ import net.sweenus.simplyswords.item.interfaces.UniqueWeaponActiveAbility;
 import net.sweenus.simplyswords.world.WeaponAbilityCooldownManager;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class HeldAbilities {
+    private static final Set<Identifier> MISSING_SPELLS = new HashSet<>();
     private final MobEntity mob;
     private final long[] readyAt = new long[2];
 
@@ -115,15 +119,24 @@ public class HeldAbilities {
         if (ids.isEmpty()) {
             return -1;
         }
-        Identifier id = new Identifier(ids.get(mob.getRandom().nextInt(ids.size())));
+        List<Identifier> usable = new ArrayList<>();
+        for (String raw : ids) {
+            Identifier spellId = new Identifier(raw);
+            Spell candidate = SpellRegistry.getSpell(spellId);
+            if (candidate == null) {
+                if (MISSING_SPELLS.add(spellId)) {
+                    RPGMinibosses.LOGGER.warn("Unknown spell {} on {}", spellId, stack);
+                }
+            } else if (canCast(candidate, target)) {
+                usable.add(spellId);
+            }
+        }
+        if (usable.isEmpty()) {
+            return -1;
+        }
+        Identifier id = usable.get(mob.getRandom().nextInt(usable.size()));
         Spell spell = SpellRegistry.getSpell(id);
-        if (spell == null || spell.release == null || spell.release.custom_impact) {
-            return -1;
-        }
         Spell.Release.Target.Type type = spell.release.target.type;
-        if (type != Spell.Release.Target.Type.SELF && type != Spell.Release.Target.Type.CLOUD && mob.distanceTo(target) > spell.range) {
-            return -1;
-        }
         SpellInfo info = new SpellInfo(spell, id);
         SpellHelper.ImpactContext context = new SpellHelper.ImpactContext()
                 .power(SpellPower.getSpellPower(spell.school, mob))
@@ -137,7 +150,7 @@ public class HeldAbilities {
             case SELF -> SpellHelper.performImpacts(world, mob, mob, mob, info, context);
             case CURSOR, BEAM -> SpellHelper.performImpacts(world, mob, target, mob, info, context);
             case AREA -> {
-                for (Entity hit : TargetHelper.targetsFromArea(mob, spell.range, spell.release.target.area, e -> e instanceof LivingEntity && !(e instanceof MinibossEntity) && !mob.isTeammate(e))) {
+                for (Entity hit : TargetHelper.targetsFromArea(mob, spell.range, spell.release.target.area, e -> e instanceof LivingEntity && !mob.isTeammate(e))) {
                     SpellHelper.performImpacts(world, mob, hit, mob, info, context.position(mob.getPos().add(0, mob.getHeight() / 2, 0)));
                 }
             }
@@ -151,6 +164,20 @@ public class HeldAbilities {
             return settings.cooldown();
         }
         return Math.max(20, Math.round(SpellHelper.getCooldownDuration(mob, spell, stack) * 20));
+    }
+
+    private boolean canCast(Spell spell, LivingEntity target) {
+        if (spell.release == null || spell.release.custom_impact) {
+            return false;
+        }
+        Spell.Release.Target.Type type = spell.release.target.type;
+        if (type == Spell.Release.Target.Type.SELF || type == Spell.Release.Target.Type.CLOUD) {
+            return true;
+        }
+        if (mob.distanceTo(target) > spell.range) {
+            return false;
+        }
+        return type != Spell.Release.Target.Type.BEAM && type != Spell.Release.Target.Type.CURSOR || mob.canSee(target);
     }
 
     public void write(NbtCompound nbt) {
