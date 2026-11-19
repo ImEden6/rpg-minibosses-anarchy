@@ -15,6 +15,8 @@ Needs Java 17+. Gradle pulls these from the Modrinth maven, versions live in `gr
 
 Both are also required at runtime, `fabric.mod.json` asks for at least those versions.
 
+Simply Swords is optional. Without it, bosses skip unique abilities and parrying, and Simply Swords entries in loadouts roll nothing. `gradlew.bat runGametest -PnoSimplySwords` drops it from the dev runtime if you want to check that, though the Simply Swords tests will crash without it.
+
 ## Loadouts
 
 What each miniboss holds comes from datapack JSON in `data/rpg-minibosses/miniboss_loadouts/<entity>.json`. The file name is the entity id, so `templar.json` is for `rpg-minibosses:templar`. To change one in a datapack, put a file at the same path and it replaces the built-in one.
@@ -57,6 +59,7 @@ Entry fields, all optional except `item` or `tag`:
 | `drop_chance` | config `equipmentDropChance` | chance to drop on death. Dropped items always come back at awakening 0 |
 | `nbt` | | SNBT string merged onto the item, like `"{display:{Name:'\"Bob\"'}}"` |
 | `spells` | the item's own spells | Spell Engine spell ids to cast. One gets picked at random each time |
+| `spell_pool` | | Spell Engine pool id, or a list of them, like `"wizards:fire"`. Every spell in the pool gets added to the ones above |
 | `ability` | see below | when the held ability fires |
 
 `ability` fields:
@@ -71,7 +74,39 @@ Entry fields, all optional except `item` or `tag`:
 | `below_health` | `1.0` | only fires when the boss is at or under this fraction of max health |
 | `interval` | `10` | how many ticks between checks |
 
-Simply Swords uniques use their own active ability. Anything else casts from `spells`, or from the Spell Engine spells on the item if `spells` is empty. Items with neither don't do anything special.
+Simply Swords uniques use their own active ability. Anything else casts from `spells`, or from the Spell Engine spells on the item if `spells` is empty, plus whatever's in `spell_pool`. Pools are read live, so a pack that edits `data/<mod>/spell_pools/` changes what the bosses cast too. A spell book with no spells of its own uses its pool. Items with no spells at all don't do anything special.
+
+Bosses never cast a spell that heals, even if it also does damage, so a priest staff only gets its attack spells.
+
+Archery spells (`SHOOT_ARROW` ones like Barrage, and bow ones like Power Shot) only work on the mercenary. It fires an extra arrow from whatever it's holding, and the arrow carries the spell, so its perks and on-hit effects work like they do for players. Other bosses skip them.
+
+An entry whose tag ends up empty, like when the mod behind it isn't installed, gets skipped when rolling.
+
+### Built-in loadouts
+
+Every adventurer except Magus Prime rolls a weapon from an RPG Series class, and casts that class's spell pool with it. The classes are item tags in `data/rpg-minibosses/tags/items/loadout/`, every entry `required: false`, so whatever mods you have fill them in. Lesser bosses use the `_lesser` tags (wood up to diamond), greater ones the `_greater` tags (diamond and up) plus Simply Swords uniques and Spellblade weapons.
+
+| tag | weapons | spell_pool |
+|---|---|---|
+| `rogue_*` | Rogues daggers and sickles, Simply Swords rapiers, sais, cutlasses, katanas, twinblades | `rogues:rogue` |
+| `warrior_*` | Rogues double axes and glaives, Archers spears, Simply Swords greataxes, glaives, halberds, warglaives, spears | `rogues:warrior` |
+| `paladin_*` | Paladins claymores, great hammers, maces, Simply Swords claymores, greathammers, longswords | `paladins:paladin` |
+| `priest_*` | Paladins holy wands and staffs | `paladins:priest` |
+| `wizard_<school>_*` | Wizards wands and staffs of that school | `wizards:<school>` |
+| `death_knight_*` | Death Knights runeblades and runeaxes | `death_knights:blood`, `frost`, `unholy` |
+| `battlemage_<school>` | Spellblade blades, claymores and orbs | `spellbladenext:<school>_battlemage` |
+| `archer_*` | bows and crossbows, Archers longbows, shortbows, heavy and rapid crossbows | `archers:archer` |
+| `uniques_heavy`, `uniques_light` | Simply Swords uniques | their own ability |
+
+| boss | rolls from |
+|---|---|
+| juggernaut | warrior, paladin, death knight, heavy uniques |
+| templar | paladin, priest, death knight, battlemage, heavy uniques |
+| trickster | rogue, battlemage, light uniques |
+| archmage_fire | fire wizard mostly, then arcane and frost wizard, priest, battlemage |
+| mercenary | archer, greater ones sometimes with a Deadeye, Tundra Hunter or War Archer pool from Archers Expansion on top |
+
+Each one keeps its old vanilla weapon as a low-weight fallback, which is also all it gets if none of the class mods are installed. To change the weapons in a class, override the tag. To change who gets which class, override the loadout file.
 
 Stormbringer also parries when hit, and a parry puts the same cooldown on it.
 
