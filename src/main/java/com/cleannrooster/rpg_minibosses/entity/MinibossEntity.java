@@ -601,9 +601,10 @@ public class MinibossEntity extends PathAwareEntity implements Tameable, GeoEnti
         if(Synchronized.effectsOf(this).stream().anyMatch(effect -> effect.effect() == this.getIntroEffect().value())){
             return false;
         }
-        if(this.getWorld() instanceof ServerWorld serverWorld && heldAbilities.openParry(serverWorld, Loadouts.get(this.getType()))){
+        Loadout loadout = Loadouts.get(this.getType());
+        if(this.getWorld() instanceof ServerWorld serverWorld && heldAbilities.openParry(serverWorld, loadout)){
             boolean damaged = super.damage(source, amount);
-            heldAbilities.closeParry(serverWorld, Loadouts.get(this.getType()));
+            heldAbilities.closeParry(serverWorld, loadout);
             return damaged;
         }
         return super.damage(source, amount);
@@ -964,6 +965,7 @@ public class MinibossEntity extends PathAwareEntity implements Tameable, GeoEnti
 
         }
         this.sitting = nbt.getBoolean("Sitting");
+        heldAbilities.read(nbt);
 
     }
     public void writeCustomDataToNbt(NbtCompound nbt) {
@@ -980,6 +982,7 @@ public class MinibossEntity extends PathAwareEntity implements Tameable, GeoEnti
             nbt.putInt("exileName",this.dataTracker.get(NAME));
         }
         nbt.putBoolean("Sitting", this.sitting);
+        heldAbilities.write(nbt);
     }
     static {
         LOGGER = LogUtils.getLogger();

@@ -1,11 +1,13 @@
 package com.cleannrooster.rpg_minibosses.loadout;
 
+import com.cleannrooster.rpg_minibosses.entity.MinibossEntity;
 import com.cleannrooster.rpg_minibosses.entity.RPGMinibossesEntities;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
@@ -53,7 +55,7 @@ public class HeldAbilities {
                 continue;
             }
             LoadoutEntry entry = loadout == null ? null : loadout.find(slot(hand), stack);
-            AbilitySettings settings = entry == null ? AbilitySettings.DEFAULT : entry.ability();
+            AbilitySettings settings = settings(entry);
             if (!settings.enabled() || mob.age % settings.interval() != 0) {
                 continue;
             }
@@ -65,7 +67,7 @@ public class HeldAbilities {
             }
             int cooldown = isSword(stack) ? useSword(world, stack, hand, target, settings) : castSpell(world, stack, target, entry, settings);
             if (cooldown >= 0) {
-                readyAt[hand.ordinal()] = world.getTime() + Math.round(cooldown * RPGMinibossesEntities.config.abilityCooldownMultiplier);
+                readyAt[hand.ordinal()] = readyTime(world, cooldown);
             }
         }
     }
@@ -79,8 +81,8 @@ public class HeldAbilities {
         if (!isSword(stack)) {
             return false;
         }
-        LoadoutEntry entry = loadout == null ? null : loadout.find(EquipmentSlot.MAINHAND, stack);
-        if (!RPGMinibossesEntities.config.heldAbilities || entry != null && !entry.ability().enabled() || readyAt[0] > world.getTime()) {
+        AbilitySettings settings = settings(loadout == null ? null : loadout.find(EquipmentSlot.MAINHAND, stack));
+        if (!RPGMinibossesEntities.config.heldAbilities || !settings.enabled() || readyAt[0] > world.getTime()) {
             WeaponAbilityCooldownManager.setCooldown(world, mob, stack, 2);
             return false;
         }
@@ -91,12 +93,8 @@ public class HeldAbilities {
     public void closeParry(ServerWorld world, @Nullable Loadout loadout) {
         ItemStack stack = mob.getMainHandStack();
         if (WeaponAbilityCooldownManager.isCoolingDown(world, mob, stack)) {
-            LoadoutEntry entry = loadout == null ? null : loadout.find(EquipmentSlot.MAINHAND, stack);
-            Integer cooldown = entry == null ? null : entry.ability().cooldown();
-            if (cooldown == null) {
-                cooldown = SimplySwordsAPI.getWeaponAbilityCooldownTicks(context(world, stack, Hand.MAIN_HAND, mob.getTarget()));
-            }
-            readyAt[0] = world.getTime() + Math.round(cooldown * RPGMinibossesEntities.config.abilityCooldownMultiplier);
+            AbilitySettings settings = settings(loadout == null ? null : loadout.find(EquipmentSlot.MAINHAND, stack));
+            readyAt[0] = readyTime(world, swordCooldown(context(world, stack, Hand.MAIN_HAND, mob.getTarget()), settings));
         }
         WeaponAbilityCooldownManager.setCooldown(world, mob, stack, 2);
     }
@@ -104,7 +102,7 @@ public class HeldAbilities {
     private int useSword(ServerWorld world, ItemStack stack, Hand hand, LivingEntity target, AbilitySettings settings) {
         WeaponAbilityContext context = context(world, stack, hand, target);
         WeaponAbilityCooldownManager.clearCooldown(mob, stack);
-        int cooldown = settings.cooldown() != null ? settings.cooldown() : SimplySwordsAPI.getWeaponAbilityCooldownTicks(context);
+        int cooldown = swordCooldown(context, settings);
         boolean used = SimplySwordsAPI.tryActivateWeaponAbility(context);
         WeaponAbilityCooldownManager.setCooldown(world, mob, stack, 2);
         return used ? cooldown : -1;
@@ -122,7 +120,8 @@ public class HeldAbilities {
         if (spell == null || spell.release == null || spell.release.custom_impact) {
             return -1;
         }
-        if (mob.distanceTo(target) > spell.range) {
+        Spell.Release.Target.Type type = spell.release.target.type;
+        if (type != Spell.Release.Target.Type.SELF && type != Spell.Release.Target.Type.CLOUD && mob.distanceTo(target) > spell.range) {
             return -1;
         }
         SpellInfo info = new SpellInfo(spell, id);
@@ -131,14 +130,14 @@ public class HeldAbilities {
                 .position(mob.getPos())
                 .target(SpellHelper.impactTargetingMode(spell));
         mob.getLookControl().lookAt(target);
-        switch (spell.release.target.type) {
+        switch (type) {
             case PROJECTILE -> SpellHelper.shootProjectile(world, mob, target, info, context);
             case METEOR -> SpellHelper.fallProjectile(world, mob, target, info, context);
             case CLOUD -> SpellHelper.placeCloud(world, mob, info, context);
             case SELF -> SpellHelper.performImpacts(world, mob, mob, mob, info, context);
             case CURSOR, BEAM -> SpellHelper.performImpacts(world, mob, target, mob, info, context);
             case AREA -> {
-                for (Entity hit : TargetHelper.targetsFromArea(mob, spell.range, spell.release.target.area, e -> e != mob && !mob.isTeammate(e))) {
+                for (Entity hit : TargetHelper.targetsFromArea(mob, spell.range, spell.release.target.area, e -> e instanceof LivingEntity && !(e instanceof MinibossEntity) && !mob.isTeammate(e))) {
                     SpellHelper.performImpacts(world, mob, hit, mob, info, context.position(mob.getPos().add(0, mob.getHeight() / 2, 0)));
                 }
             }
@@ -152,6 +151,27 @@ public class HeldAbilities {
             return settings.cooldown();
         }
         return Math.max(20, Math.round(SpellHelper.getCooldownDuration(mob, spell, stack) * 20));
+    }
+
+    public void write(NbtCompound nbt) {
+        nbt.putLongArray("HeldAbilityReadyAt", readyAt);
+    }
+
+    public void read(NbtCompound nbt) {
+        long[] saved = nbt.getLongArray("HeldAbilityReadyAt");
+        System.arraycopy(saved, 0, readyAt, 0, Math.min(saved.length, readyAt.length));
+    }
+
+    private static AbilitySettings settings(@Nullable LoadoutEntry entry) {
+        return entry == null ? AbilitySettings.DEFAULT : entry.ability();
+    }
+
+    private static int swordCooldown(WeaponAbilityContext context, AbilitySettings settings) {
+        return settings.cooldown() != null ? settings.cooldown() : SimplySwordsAPI.getWeaponAbilityCooldownTicks(context);
+    }
+
+    private static long readyTime(ServerWorld world, int ticks) {
+        return world.getTime() + Math.round(ticks * RPGMinibossesEntities.config.abilityCooldownMultiplier);
     }
 
     private List<String> spellsOf(ItemStack stack) {
