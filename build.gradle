@@ -1,6 +1,7 @@
 plugins {
 	id 'fabric-loom' version '1.13-SNAPSHOT'
 	id 'maven-publish'
+	id 'me.modmuss50.mod-publish-plugin' version '2.2.1'
 }
 
 version = project.mod_version
@@ -166,5 +167,53 @@ publishing {
 		// Notice: This block does NOT have the same function as the block in the top level.
 		// The repositories here will be used for publishing your artifact, not for
 		// retrieving dependencies.
+	}
+}
+
+def releaseVersion = mod_version.split('\\+')[0]
+def releaseMinecraft = minecraft_version
+def releaseNotes = providers.fileContents(layout.projectDirectory.file('CHANGELOG.md')).asText.map { text ->
+	def section = text.replace('\r\n', '\n') =~ /(?ms)^## \[${java.util.regex.Pattern.quote(releaseVersion)}\][^\n]*\n(.*?)(?=^## \[|\z)/
+	if (!section.find())
+		throw new GradleException("CHANGELOG.md has no section for ${releaseVersion}")
+	section.group(1).trim()
+}
+
+def modrinthId = modrinth_project_id.trim()
+def curseforgeId = curseforge_project_id.trim()
+def toModrinth = !modrinthId.isEmpty()
+def toCurseforge = !curseforgeId.isEmpty()
+def modrinthRequires = ['fabric-api', 'spell-engine', 'extra-rpg-attributes', 'azurelib', 'simply-swords']
+def curseforgeRequires = ['fabric-api', 'spell-engine', 'extra-spell-attributes', 'azurelib', 'simply-swords']
+
+publishMods {
+	file = remapJar.archiveFile
+	changelog = releaseNotes
+	type = STABLE
+	displayName = "ANARCHY RPG Minibosses ${releaseVersion} (Fabric ${releaseMinecraft})"
+	modLoaders.add('fabric')
+	// without every token it only writes what it would upload to build/publishMods
+	dryRun = (toModrinth && providers.environmentVariable('MODRINTH_TOKEN').getOrNull() == null)
+			|| (toCurseforge && providers.environmentVariable('CURSEFORGE_TOKEN').getOrNull() == null)
+
+	if (toModrinth) {
+		modrinth {
+			projectId = modrinthId
+			accessToken = providers.environmentVariable('MODRINTH_TOKEN')
+			minecraftVersions.add(releaseMinecraft)
+			requires(*modrinthRequires)
+		}
+	}
+
+	if (toCurseforge) {
+		curseforge {
+			projectId = curseforgeId
+			accessToken = providers.environmentVariable('CURSEFORGE_TOKEN')
+			minecraftVersions.add(releaseMinecraft)
+			javaVersions.add(JavaVersion.VERSION_17)
+			client = true
+			server = true
+			requires(*curseforgeRequires)
+		}
 	}
 }

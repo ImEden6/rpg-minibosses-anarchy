@@ -1,0 +1,61 @@
+name: publish
+
+# tag has to match mod_version: git tag v1.1.0+1.20.1 && git push origin v1.1.0+1.20.1
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  publish:
+    runs-on: ubuntu-22.04
+    environment: release
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v4
+      - name: validate gradle wrapper
+        uses: gradle/actions/wrapper-validation@v4
+      - name: setup jdk
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'microsoft'
+      - name: setup gradle
+        uses: gradle/actions/setup-gradle@v4
+      - name: make gradle wrapper executable
+        run: chmod +x ./gradlew
+
+      - name: check the tag, project ids and tokens
+        env:
+          MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
+          CURSEFORGE_TOKEN: ${{ secrets.CURSEFORGE_TOKEN }}
+        run: |
+          prop() { grep "^$1=" gradle.properties | cut -d= -f2- | tr -d '\r' | xargs; }
+          expected="v$(prop mod_version)"
+          if [ "${GITHUB_REF_NAME}" != "${expected}" ]; then
+            echo "::error::Tag ${GITHUB_REF_NAME} doesn't match gradle.properties, expected ${expected}"
+            exit 1
+          fi
+          modrinth=$(prop modrinth_project_id)
+          curseforge=$(prop curseforge_project_id)
+          if [ -z "${modrinth}" ] && [ -z "${curseforge}" ]; then
+            echo "::error::Set modrinth_project_id or curseforge_project_id in gradle.properties"
+            exit 1
+          fi
+          # publishMods quietly dry-runs without a token, which would look like a release
+          if [ -n "${modrinth}" ] && [ -z "${MODRINTH_TOKEN}" ]; then
+            echo "::error::Add a MODRINTH_TOKEN secret to the release environment"
+            exit 1
+          fi
+          if [ -n "${curseforge}" ] && [ -z "${CURSEFORGE_TOKEN}" ]; then
+            echo "::error::Add a CURSEFORGE_TOKEN secret to the release environment"
+            exit 1
+          fi
+
+      - name: build
+        run: ./gradlew build
+
+      - name: publish
+        env:
+          MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
+          CURSEFORGE_TOKEN: ${{ secrets.CURSEFORGE_TOKEN }}
+        run: ./gradlew publishMods
