@@ -2,9 +2,12 @@ package com.cleannrooster.rpg_minibosses.client.entity.model;
 
 import com.cleannrooster.rpg_minibosses.RPGMinibosses;
 import com.cleannrooster.rpg_minibosses.entity.MinibossEntity;
+import mod.azure.azurelib.core.animation.AnimationState;
 import mod.azure.azurelib.model.GeoModel;
 import net.minecraft.client.render.entity.model.ModelWithArms;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.util.Arm;
 import net.minecraft.util.Identifier;
 
@@ -30,6 +33,12 @@ public class ArtilleristModel<T extends MinibossEntity> extends GeoModel<T> impl
     @Override
     public Identifier getAnimationResource(T reaver) {
         return Identifier.of(RPGMinibosses.MOD_ID,"animations/mobs.animations.json");
+    }
+    @Override
+    public void setCustomAnimations(T animatable, long instanceId, AnimationState<T> animationState) {
+        super.setCustomAnimations(animatable, instanceId, animationState);
+        ItemStack held = animatable.getMainHandStack();
+        getBone("repeater_crossbow_arrow").ifPresent(bone -> bone.setHidden(!held.isEmpty() && !held.isOf(Items.CROSSBOW)));
     }
     public void setArmAngle(Arm humanoidArm, MatrixStack poseStack) {
         this.translateAndRotate(poseStack);

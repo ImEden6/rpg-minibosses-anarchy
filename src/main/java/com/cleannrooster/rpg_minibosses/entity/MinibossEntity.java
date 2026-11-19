@@ -274,7 +274,11 @@ public class MinibossEntity extends PathAwareEntity implements Tameable, GeoEnti
         Loadout loadout = Loadouts.get(this.getType());
         LoadoutEntry entry = loadout == null ? null : loadout.roll(slot, this.getRandom());
         if(entry != null){
-            this.equipStack(slot, entry.create(this.getRandom()));
+            ItemStack stack = entry.create(this.getRandom());
+            if(!canHold(slot, stack)){
+                return;
+            }
+            this.equipStack(slot, stack);
             heldAbilities.rolled(slot == EquipmentSlot.MAINHAND ? Hand.MAIN_HAND : Hand.OFF_HAND, loadout.pool(slot).indexOf(entry));
         }
     }
@@ -497,6 +501,9 @@ public class MinibossEntity extends PathAwareEntity implements Tameable, GeoEnti
     }
     public boolean skipOffHand(){
         return false;
+    }
+    public boolean canHold(EquipmentSlot slot, ItemStack stack){
+        return true;
     }
 
     @Override

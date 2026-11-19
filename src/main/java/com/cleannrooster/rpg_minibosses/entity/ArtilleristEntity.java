@@ -16,6 +16,7 @@ import net.minecraft.entity.ai.RangedAttackMob;
 import net.minecraft.entity.ai.brain.task.PanicTask;
 import net.minecraft.entity.ai.control.LookControl;
 import net.minecraft.entity.ai.control.MoveControl;
+import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.ai.goal.AttackGoal;
 import net.minecraft.entity.ai.goal.CrossbowAttackGoal;
 import net.minecraft.entity.ai.goal.EscapeDangerGoal;
@@ -120,8 +121,9 @@ public class ArtilleristEntity extends MinibossEntity implements RangedAttackMob
 
     }
     public boolean performing = false;
-    public boolean skipMainHand(){
-        return true;
+    @Override
+    public boolean canHold(EquipmentSlot slot, ItemStack stack){
+        return slot != EquipmentSlot.MAINHAND || stack.getItem() instanceof RangedWeaponItem;
     }
     public int trapCooldown = 160;
     @Override
@@ -300,11 +302,10 @@ public class ArtilleristEntity extends MinibossEntity implements RangedAttackMob
     }
 
     public void shoot(LivingEntity entity, float speed) {
-        Hand hand = ProjectileUtil.getHandPossiblyHolding(entity, Items.CROSSBOW);
-        ItemStack itemStack = entity.getStackInHand(hand);
+        ItemStack itemStack = this.getMainHandStack();
         float fs = getSoundPitch();
 
-            shoot(entity.getWorld(), this, hand, new ItemStack(Items.ARROW), itemStack, fs, true, speed,  (float)(14 - entity.getWorld().getDifficulty().getId() * 4), 0.0F);
+            shoot(entity.getWorld(), this, Hand.MAIN_HAND, itemStack, new ItemStack(Items.ARROW), fs, true, speed,  (float)(14 - entity.getWorld().getDifficulty().getId() * 4), 0.0F);
 
 
         this.postShoot();
@@ -333,7 +334,7 @@ public class ArtilleristEntity extends MinibossEntity implements RangedAttackMob
             }
 
             world.spawnEntity(projectileEntity);
-            world.playSound((PlayerEntity)null, shooter.getX(), shooter.getY(), shooter.getZ(), SoundEvents.ITEM_CROSSBOW_SHOOT, SoundCategory.PLAYERS, 1.0F, soundPitch);
+            world.playSound((PlayerEntity)null, shooter.getX(), shooter.getY(), shooter.getZ(), crossbow.getItem() instanceof CrossbowItem ? SoundEvents.ITEM_CROSSBOW_SHOOT : SoundEvents.ENTITY_ARROW_SHOOT, SoundCategory.PLAYERS, 1.0F, soundPitch);
         }
     }
     private static PersistentProjectileEntity createArrow(World world, LivingEntity entity, ItemStack crossbow, ItemStack arrow) {
@@ -343,11 +344,29 @@ public class ArtilleristEntity extends MinibossEntity implements RangedAttackMob
             persistentProjectileEntity.setCritical(true);
         }
 
-        persistentProjectileEntity.setSound(SoundEvents.ITEM_CROSSBOW_HIT);
-        persistentProjectileEntity.setShotFromCrossbow(true);
-        int i = EnchantmentHelper.getLevel(Enchantments.PIERCING, crossbow);
-        if (i > 0) {
-            persistentProjectileEntity.setPierceLevel((byte)i);
+        if (crossbow.getItem() instanceof CrossbowItem) {
+            persistentProjectileEntity.setSound(SoundEvents.ITEM_CROSSBOW_HIT);
+            persistentProjectileEntity.setShotFromCrossbow(true);
+            int i = EnchantmentHelper.getLevel(Enchantments.PIERCING, crossbow);
+            if (i > 0) {
+                persistentProjectileEntity.setPierceLevel((byte)i);
+            }
+        } else {
+            int power = EnchantmentHelper.getLevel(Enchantments.POWER, crossbow);
+            if (power > 0) {
+                persistentProjectileEntity.setDamage(persistentProjectileEntity.getDamage() + power * 0.5 + 0.5);
+            }
+            int punch = EnchantmentHelper.getLevel(Enchantments.PUNCH, crossbow);
+            if (punch > 0) {
+                persistentProjectileEntity.setPunch(punch);
+            }
+            if (EnchantmentHelper.getLevel(Enchantments.FLAME, crossbow) > 0) {
+                persistentProjectileEntity.setOnFireFor(100);
+            }
+        }
+        EntityAttribute rangedDamage = Registries.ATTRIBUTE.get(new Identifier("ranged_weapon", "damage"));
+        if (rangedDamage != null && entity.getAttributes().hasAttribute(rangedDamage) && entity.getAttributeValue(rangedDamage) > 0) {
+            persistentProjectileEntity.setDamage(persistentProjectileEntity.getDamage() * entity.getAttributeValue(rangedDamage) / 6);
         }
 
         return persistentProjectileEntity;
@@ -360,6 +379,6 @@ public class ArtilleristEntity extends MinibossEntity implements RangedAttackMob
         double g = target.getBodyY(0.3333333333333333) - projectile.getY() + f * (double)0.2F;
         Vector3f vector3f = this.getProjectileLaunchVelocity(entity, new Vec3d(d, g, e), multishotSpray);
         projectile.setVelocity((double)vector3f.x(), (double)vector3f.y(), (double)vector3f.z(), speed, (float)(14 - entity.getWorld().getDifficulty().getId() * 4));
-        entity.playSound(SoundEvents.ITEM_CROSSBOW_SHOOT, 1.0F, 1.0F / (entity.getRandom().nextFloat() * 0.4F + 0.8F));
+        entity.playSound(entity.getMainHandStack().getItem() instanceof CrossbowItem ? SoundEvents.ITEM_CROSSBOW_SHOOT : SoundEvents.ENTITY_ARROW_SHOOT, 1.0F, 1.0F / (entity.getRandom().nextFloat() * 0.4F + 0.8F));
     }
 }

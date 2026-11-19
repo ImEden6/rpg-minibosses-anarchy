@@ -19,6 +19,7 @@ import net.minecraft.entity.mob.PatrolEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.item.CrossbowItem;
+import net.minecraft.item.RangedWeaponItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -65,7 +66,7 @@ public class ArtilleristCrossbowAttackGoal<T extends ArtilleristEntity & RangedA
     }
 
     private boolean isEntityHoldingCrossbow() {
-        return this.actor.isHolding(Items.CROSSBOW);
+        return this.actor.getMainHandStack().getItem() instanceof RangedWeaponItem;
     }
 
     public boolean shouldContinue() {
@@ -123,7 +124,7 @@ public class ArtilleristCrossbowAttackGoal<T extends ArtilleristEntity & RangedA
             }
             if (this.stage == ArtilleristCrossbowAttackGoal.Stage.UNCHARGED) {
                 if (!bl3) {
-                    this.actor.setCurrentHand(ProjectileUtil.getHandPossiblyHolding(this.actor, Items.CROSSBOW));
+                    this.actor.setCurrentHand(Hand.MAIN_HAND);
 
                     this.stage = ArtilleristCrossbowAttackGoal.Stage.CHARGING;
                     if(this.isTakingLonger) {

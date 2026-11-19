@@ -44,6 +44,8 @@ Entity ids: `templar`, `juggernaut`, `trickster`, `mercenary`, `archmage_fire`, 
 
 On spawn the boss picks one entry per hand, weighted by `weight`. An `air` entry leaves that hand empty. If the mainhand ends up empty, the boss falls back to its normal weapon.
 
+The mercenary only takes bows and crossbows in its mainhand, modded ones included. Anything else rolls back to its plain crossbow. Bows use their Power, Punch and Flame enchantments, crossbows use Piercing, and bows from Ranged Weapon API mods (Archers and the like) keep their damage.
+
 Entry fields, all optional except `item` or `tag`:
 
 | field | default | what it does |

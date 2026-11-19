@@ -11,6 +11,7 @@ import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.model.json.ModelTransformationMode;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.registry.Registries;
 
 public class RenderLayerItemMinibossEntity<T extends MinibossEntity> extends BlockAndItemGeoLayer<MinibossEntity> {
@@ -42,7 +43,7 @@ public class RenderLayerItemMinibossEntity<T extends MinibossEntity> extends Blo
     @Override
     protected void renderStackForBone(MatrixStack poseStack, GeoBone bone, ItemStack stack, MinibossEntity animatable,
                                       VertexConsumerProvider bufferSource, float partialTick, int packedLight, int packedOverlay) {
-        if(animatable instanceof ArtilleristEntity){
+        if(animatable instanceof ArtilleristEntity && stack.isOf(Items.CROSSBOW)){
             return;
         }
         boolean simplySwords = Registries.ITEM.getId(stack.getItem()).getNamespace().equals("simplyswords");

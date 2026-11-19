@@ -1,5 +1,6 @@
 package com.cleannrooster.rpg_minibosses.test;
 
+import com.cleannrooster.rpg_minibosses.entity.ArtilleristEntity;
 import com.cleannrooster.rpg_minibosses.entity.JuggernautEntity;
 import com.cleannrooster.rpg_minibosses.entity.MinibossEntity;
 import com.cleannrooster.rpg_minibosses.entity.RPGMinibossesEntities;
@@ -12,9 +13,11 @@ import com.google.gson.JsonParser;
 import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.EquipmentSlot;
+import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.MobEntity;
+import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -544,6 +547,51 @@ public class LoadoutTests implements FabricGameTest {
         long now = world.getTime();
         check(abilities.readyAt(Hand.MAIN_HAND) == now + 100, "mainhand readyAt " + abilities.readyAt(Hand.MAIN_HAND));
         check(abilities.readyAt(Hand.OFF_HAND) == now + 30, "offhand readyAt " + abilities.readyAt(Hand.OFF_HAND));
+        context.complete();
+    }
+
+    @GameTest(templateName = EMPTY_STRUCTURE)
+    public void mercenaryOnlyTakesRangedMainhand(TestContext context) {
+        ArtilleristEntity mercenary = boss(context, RPGMinibossesEntities.ARTILLERIST_ENTITY_ENTRY.entityType(), 0, 0);
+        check(mercenary.canHold(EquipmentSlot.MAINHAND, new ItemStack(Items.BOW)), "bow should be allowed");
+        check(mercenary.canHold(EquipmentSlot.MAINHAND, new ItemStack(Items.CROSSBOW)), "crossbow should be allowed");
+        check(!mercenary.canHold(EquipmentSlot.MAINHAND, new ItemStack(Items.DIAMOND_SWORD)), "sword should be refused");
+        check(!mercenary.canHold(EquipmentSlot.MAINHAND, ItemStack.EMPTY), "empty hand should be refused");
+        check(mercenary.canHold(EquipmentSlot.OFFHAND, new ItemStack(Items.DIAMOND_SWORD)), "offhand is not limited");
+        context.complete();
+    }
+
+    private static PersistentProjectileEntity mercenaryShot(TestContext context, ItemStack weapon) {
+        ArtilleristEntity mercenary = boss(context, RPGMinibossesEntities.ARTILLERIST_ENTITY_ENTRY.entityType(), 0, 0);
+        MobEntity target = frozen(context, EntityType.IRON_GOLEM, new BlockPos(1, 2, 1));
+        target.refreshPositionAndAngles(mercenary.getX() + 8, mercenary.getY(), mercenary.getZ(), 0, 0);
+        mercenary.equipStack(EquipmentSlot.MAINHAND, weapon);
+        mercenary.setTarget(target);
+        mercenary.shoot(target, 1.6F);
+        List<PersistentProjectileEntity> arrows = context.getWorld().getEntitiesByClass(PersistentProjectileEntity.class, mercenary.getBoundingBox().expand(4), arrow -> arrow.getOwner() == mercenary);
+        check(arrows.size() == 1, "expected one arrow, got " + arrows.size());
+        return arrows.get(0);
+    }
+
+    @GameTest(templateName = EMPTY_STRUCTURE)
+    public void mercenaryBowUsesEnchantments(TestContext context) {
+        ItemStack bow = new ItemStack(Items.BOW);
+        bow.addEnchantment(Enchantments.POWER, 5);
+        bow.addEnchantment(Enchantments.FLAME, 1);
+        PersistentProjectileEntity arrow = mercenaryShot(context, bow);
+        check(Math.abs(arrow.getDamage() - 5.0) < 0.001, "power 5 arrow damage " + arrow.getDamage());
+        check(arrow.isOnFire(), "flame bow arrow should burn");
+        check(!arrow.isShotFromCrossbow(), "bow arrow should not count as crossbow");
+        context.complete();
+    }
+
+    @GameTest(templateName = EMPTY_STRUCTURE)
+    public void mercenaryCrossbowPierces(TestContext context) {
+        ItemStack crossbow = new ItemStack(Items.CROSSBOW);
+        crossbow.addEnchantment(Enchantments.PIERCING, 3);
+        PersistentProjectileEntity arrow = mercenaryShot(context, crossbow);
+        check(arrow.isShotFromCrossbow(), "crossbow arrow should count as crossbow");
+        check(arrow.getPierceLevel() == 3, "pierce level " + arrow.getPierceLevel());
         context.complete();
     }
 }
