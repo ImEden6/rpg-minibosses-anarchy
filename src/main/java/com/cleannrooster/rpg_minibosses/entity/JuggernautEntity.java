@@ -1,5 +1,6 @@
 package com.cleannrooster.rpg_minibosses.entity;
 
+import com.cleannrooster.rpg_minibosses.loadout.SpellMotion;
 import com.cleannrooster.rpg_minibosses.RPGMinibosses;
 import com.cleannrooster.rpg_minibosses.client.entity.effect.Effects;
 import com.cleannrooster.rpg_minibosses.entity.AI.JuggernautLeapSlamGoal;
@@ -273,6 +274,32 @@ public class JuggernautEntity extends MinibossEntity{
         return super.tryAttack(target);
 
     }
+    @Override
+    public boolean busy() {
+        return this.performing;
+    }
+
+    @Override
+    public int spellAnimation(SpellMotion motion) {
+        switch (motion) {
+            case STRIKE -> {
+                String swing = swingBool ? "swing1" : "swing2";
+                this.triggerAnim(swing, swing);
+                swingBool = !swingBool;
+                return 0;
+            }
+            case AREA -> {
+                this.triggerAnim("slam", "slam");
+                this.performing = true;
+                ((WorldScheduler) this.getWorld()).schedule(20, () -> this.performing = false);
+                return 20;
+            }
+            default -> {
+                return 0;
+            }
+        }
+    }
+
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar animationData) {
         super.registerControllers(animationData);

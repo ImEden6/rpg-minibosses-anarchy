@@ -1,5 +1,6 @@
 package com.cleannrooster.rpg_minibosses.entity;
 
+import com.cleannrooster.rpg_minibosses.loadout.SpellMotion;
 import com.cleannrooster.rpg_minibosses.RPGMinibosses;
 import com.cleannrooster.rpg_minibosses.client.entity.effect.Effects;
 import mod.azure.azurelib.core.animation.*;
@@ -229,6 +230,20 @@ public class TemplarEntity extends MinibossEntity{
         Vec3d vec3 = new Vec3d(Axx * x + Axy * y + Axz * z,Ayx * x + Ayy * y + Ayz * z,Azx * x + Azy * y + Azz * z);
         return vec3;
     }
+    @Override
+    public boolean busy() {
+        return this.performing;
+    }
+
+    @Override
+    public int spellAnimation(SpellMotion motion) {
+        if (motion == SpellMotion.STRIKE) {
+            this.triggerAnim("actions", swingBool ? "swing1" : "swing2");
+            swingBool = !swingBool;
+        }
+        return 0;
+    }
+
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar animationData) {
         super.registerControllers(animationData);

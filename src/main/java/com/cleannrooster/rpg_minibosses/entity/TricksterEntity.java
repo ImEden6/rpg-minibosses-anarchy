@@ -1,5 +1,6 @@
 package com.cleannrooster.rpg_minibosses.entity;
 
+import com.cleannrooster.rpg_minibosses.loadout.SpellMotion;
 import com.cleannrooster.rpg_minibosses.RPGMinibosses;
 import mod.azure.azurelib.core.animation.AnimatableManager;
 import mod.azure.azurelib.core.animation.Animation;
@@ -252,6 +253,24 @@ public class TricksterEntity extends MinibossEntity{
 
         }
     }
+    @Override
+    public boolean busy() {
+        return this.performing;
+    }
+
+    @Override
+    public int spellAnimation(SpellMotion motion) {
+        switch (motion) {
+            case STRIKE -> {
+                String swing = swingBool ? "swing1" : "swing2";
+                this.triggerAnim(swing, swing);
+                swingBool = !swingBool;
+            }
+            case CAST -> this.triggerAnim("throw1", "throw1");
+        }
+        return 0;
+    }
+
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar animationData) {
         super.registerControllers(animationData);

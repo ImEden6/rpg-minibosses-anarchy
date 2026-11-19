@@ -1,5 +1,6 @@
 package com.cleannrooster.rpg_minibosses.entity;
 
+import com.cleannrooster.rpg_minibosses.loadout.SpellMotion;
 import com.cleannrooster.rpg_minibosses.RPGMinibosses;
 import com.cleannrooster.rpg_minibosses.entity.AI.ArtilleristCrossbowAttackGoal;
 import mod.azure.azurelib.core.animation.AnimatableManager;
@@ -50,6 +51,7 @@ import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.SpellInfo;
 import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.internals.arrow.ArrowExtension;
+import net.spell_engine.internals.WorldScheduler;
 import net.spell_power.api.SpellPower;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -316,6 +318,22 @@ public class ArtilleristEntity extends MinibossEntity implements RangedAttackMob
 
         this.postShoot();
     }
+    @Override
+    public boolean busy() {
+        return this.performing;
+    }
+
+    @Override
+    public int spellAnimation(SpellMotion motion) {
+        if (motion != SpellMotion.ARCHERY) {
+            return 0;
+        }
+        this.triggerAnim("shoot_heavy", "shoot_heavy");
+        this.performing = true;
+        ((WorldScheduler) this.getWorld()).schedule(28, () -> this.performing = false);
+        return 20;
+    }
+
     @Override
     public boolean shootsSpellArrows() {
         return true;
