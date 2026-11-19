@@ -1,5 +1,6 @@
 package com.cleannrooster.rpg_minibosses.loadout;
 
+import com.cleannrooster.rpg_minibosses.RPGMinibosses;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -24,6 +25,7 @@ import java.util.List;
 public record LoadoutEntry(@Nullable Item item, @Nullable TagKey<Item> tag, int weight, @Nullable Integer awakening,
                            @Nullable Float dropChance, @Nullable NbtCompound nbt, List<Identifier> spells, AbilitySettings ability) {
 
+    @Nullable
     public static LoadoutEntry fromJson(JsonObject json) throws CommandSyntaxException {
         Item item = null;
         TagKey<Item> tag = null;
@@ -31,7 +33,11 @@ public record LoadoutEntry(@Nullable Item item, @Nullable TagKey<Item> tag, int 
             tag = TagKey.of(RegistryKeys.ITEM, new Identifier(JsonHelper.getString(json, "tag")));
         } else {
             Identifier id = new Identifier(JsonHelper.getString(json, "item", "minecraft:air"));
-            item = Registries.ITEM.getOrEmpty(id).orElseThrow(() -> new IllegalArgumentException("unknown item " + id));
+            item = Registries.ITEM.getOrEmpty(id).orElse(null);
+            if (item == null) {
+                RPGMinibosses.LOGGER.warn("Skipping loadout entry with unknown item {}", id);
+                return null;
+            }
         }
         List<Identifier> spells = new ArrayList<>();
         for (JsonElement spell : JsonHelper.getArray(json, "spells", new com.google.gson.JsonArray())) {

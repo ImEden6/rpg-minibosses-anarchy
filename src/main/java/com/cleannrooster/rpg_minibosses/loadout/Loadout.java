@@ -21,13 +21,20 @@ public record Loadout(List<LoadoutEntry> mainhand, List<LoadoutEntry> offhand) {
     private static List<LoadoutEntry> pool(JsonObject json, String key) throws CommandSyntaxException {
         List<LoadoutEntry> entries = new ArrayList<>();
         for (JsonElement element : JsonHelper.getArray(json, key, new com.google.gson.JsonArray())) {
-            entries.add(LoadoutEntry.fromJson(element.getAsJsonObject()));
+            LoadoutEntry entry = LoadoutEntry.fromJson(element.getAsJsonObject());
+            if (entry != null) {
+                entries.add(entry);
+            }
         }
         return entries;
     }
 
     public List<LoadoutEntry> pool(EquipmentSlot slot) {
-        return slot == EquipmentSlot.OFFHAND ? offhand : mainhand;
+        return switch (slot) {
+            case MAINHAND -> mainhand;
+            case OFFHAND -> offhand;
+            default -> List.of();
+        };
     }
 
     @Nullable
