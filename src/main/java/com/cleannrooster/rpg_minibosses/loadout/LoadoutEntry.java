@@ -17,6 +17,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.JsonHelper;
 import net.minecraft.util.math.random.Random;
 import net.sweenus.simplyswords.api.AwakeningApi;
+import net.sweenus.simplyswords.registry.ComponentTypeRegistry;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -72,7 +73,8 @@ public record LoadoutEntry(@Nullable Item item, @Nullable TagKey<Item> tag, int 
         if (nbt != null) {
             stack.getOrCreateNbt().copyFrom(nbt);
         }
-        AwakeningApi.setLevel(stack, awakening == null ? 8 : awakening);
+        int level = awakening != null ? awakening : ComponentTypeRegistry.AWAKENING.contains(stack) ? AwakeningApi.getLevel(stack) : 8;
+        AwakeningApi.setLevel(stack, level);
         return stack;
     }
 }
