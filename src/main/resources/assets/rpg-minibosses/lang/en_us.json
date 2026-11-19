@@ -62,6 +62,7 @@
   "entity.rpg-minibosses.juggernaut.name.4":  "Damoi Tui",
 
   "entity.rpg-minibosses.dark_matter":  "Dark Orb",
+  "entity.rpg-minibosses.trap":  "Mercenary Trap",
 
   "item.rpg-minibosses.forsaken_juggernaut_spawn_egg": "Forsaken Juggernaut Spawn Egg",
   "item.rpg-minibosses.forsaken_mercenary_spawn_egg": "Forsaken Mercenary Spawn Egg",
@@ -76,6 +77,8 @@
   "item.rpg-minibosses.forsaken_magus_spawn_egg": "Forsaken Magus Spawn Egg",
 
   "item.rpg-minibosses.lavos_horn": "Lavos' Horn",
+  "text.rpg-minibosses.lavos_horn": "The horn's power flows into you",
+  "text.rpg-minibosses.lavos_horn_2": "Use to absorb its power",
 
   "item.rpg-minibosses.poster_merc": "Wanted Poster (Mercenary)",
   "item.rpg-minibosses.poster_jugg": "Wanted Poster (Juggernaut)",
