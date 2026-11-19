@@ -1,0 +1,22 @@
+{
+  "school": "HEALING",
+  "range": 1,
+  "cast": {
+    "duration": 0
+  },
+  "release": {
+    "target": {
+      "type": "SELF"
+    }
+  },
+  "impact": [
+    {
+      "action": {
+        "type": "HEAL",
+        "heal": {
+          "spell_power_coefficient": 1
+        }
+      }
+    }
+  ]
+}

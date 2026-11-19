@@ -1,0 +1,22 @@
+{
+  "school": "PHYSICAL_RANGED",
+  "range": 0,
+  "cast": {
+    "duration": 0
+  },
+  "release": {
+    "target": {
+      "type": "SHOOT_ARROW",
+      "shoot_arrow": {
+        "damage_multiplier": 2,
+        "launch_properties": {
+          "velocity": 3,
+          "extra_launch_count": 1
+        }
+      }
+    }
+  },
+  "arrow_perks": {
+    "bypass_iframes": true
+  }
+}
