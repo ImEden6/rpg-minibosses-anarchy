@@ -877,4 +877,22 @@ public class LoadoutTests implements FabricGameTest {
             context.complete();
         });
     }
+
+    @GameTest(templateName = EMPTY_STRUCTURE)
+    public void spellAnimationsOffCastsRightAway(TestContext context) {
+        ServerWorld world = context.getWorld();
+        ArchmageFireEntity archmage = archmage(context);
+        HeldAbilities abilities = new HeldAbilities(archmage);
+        boolean enabled = RPGMinibossesEntities.config.spellAnimations;
+        RPGMinibossesEntities.config.spellAnimations = false;
+        try {
+            abilities.tick(world, spellLoadout("rpg-minibosses-gametest:area_buff"));
+        } finally {
+            RPGMinibossesEntities.config.spellAnimations = enabled;
+        }
+        check(abilities.readyAt(Hand.MAIN_HAND) == world.getTime() + 40, "area spell did not cast");
+        check(archmage.hasStatusEffect(StatusEffects.ABSORPTION), "spell waited for a wave with animations off");
+        check(!archmage.busy(), "boss played a move with animations off");
+        context.complete();
+    }
 }
