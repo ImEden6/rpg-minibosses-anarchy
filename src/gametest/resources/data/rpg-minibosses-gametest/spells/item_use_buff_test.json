@@ -1,0 +1,17 @@
+{
+  "school": "PHYSICAL_RANGED",
+  "range": 0,
+  "mode": "ITEM_USE",
+  "impact": [
+    {
+      "action": {
+        "type": "STATUS_EFFECT",
+        "status_effect": {
+          "effect_id": "minecraft:slowness",
+          "duration": 5,
+          "apply_mode": "SET"
+        }
+      }
+    }
+  ]
+}

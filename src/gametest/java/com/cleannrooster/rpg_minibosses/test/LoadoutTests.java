@@ -17,9 +17,11 @@ import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.MobEntity;
+import net.minecraft.entity.projectile.ArrowEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.block.Blocks;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.Registries;
@@ -696,6 +698,101 @@ public class LoadoutTests implements FabricGameTest {
         HeldAbilities abilities = new HeldAbilities(mob);
         abilities.tick(world, spellLoadout("rpg-minibosses-gametest:heal_test"));
         check(abilities.readyAt(Hand.MAIN_HAND) == 0, "boss cast a heal");
+        context.complete();
+    }
+
+    @GameTest(templateName = EMPTY_STRUCTURE)
+    public void extraArrowsStopWhenMercenaryDies(TestContext context) {
+        PersistentProjectileEntity arrow = spellArrows(context, "rpg-minibosses-gametest:arrow_test", 4, 1, context::complete).get(0);
+        ((ArtilleristEntity) arrow.getOwner()).setHealth(0);
+    }
+
+    @GameTest(templateName = EMPTY_STRUCTURE)
+    public void mercenaryCrossbowShootsGivenProjectile(TestContext context) {
+        ServerWorld world = context.getWorld();
+        ArtilleristEntity mercenary = boss(context, RPGMinibossesEntities.ARTILLERIST_ENTITY_ENTRY.entityType(), 0, 0);
+        MobEntity target = frozen(context, EntityType.IRON_GOLEM, new BlockPos(1, 2, 1));
+        target.refreshPositionAndAngles(mercenary.getX() + 8, mercenary.getY(), mercenary.getZ(), 0, 0);
+        ArrowEntity arrow = new ArrowEntity(world, mercenary);
+        mercenary.shoot(target, new ItemStack(Items.CROSSBOW), arrow, 0);
+        check(arrow.getVelocity().length() > 1.2, "given arrow speed " + arrow.getVelocity().length());
+        int spawned = world.getEntitiesByClass(PersistentProjectileEntity.class, mercenary.getBoundingBox().expand(8), a -> a.getOwner() == mercenary).size();
+        check(spawned == 0, "override spawned its own arrow, got " + spawned);
+        context.complete();
+    }
+
+    @GameTest(templateName = EMPTY_STRUCTURE)
+    public void deadMercenaryDoesNotShoot(TestContext context) {
+        ArtilleristEntity mercenary = boss(context, RPGMinibossesEntities.ARTILLERIST_ENTITY_ENTRY.entityType(), 0, 0);
+        MobEntity target = frozen(context, EntityType.IRON_GOLEM, new BlockPos(1, 2, 1));
+        target.refreshPositionAndAngles(mercenary.getX() + 8, mercenary.getY(), mercenary.getZ(), 0, 0);
+        mercenary.equipStack(EquipmentSlot.MAINHAND, new ItemStack(Items.CROSSBOW));
+        mercenary.setTarget(target);
+        mercenary.setHealth(0);
+        mercenary.shoot(target, 1.6F);
+        int spawned = context.getWorld().getEntitiesByClass(PersistentProjectileEntity.class, mercenary.getBoundingBox().expand(8), a -> a.getOwner() == mercenary).size();
+        check(spawned == 0, "dead mercenary shot " + spawned + " arrows");
+        context.complete();
+    }
+
+    @GameTest(templateName = EMPTY_STRUCTURE)
+    public void itemUseSpellWithoutPerksSkipped(TestContext context) {
+        ServerWorld world = context.getWorld();
+        ArtilleristEntity mercenary = boss(context, RPGMinibossesEntities.ARTILLERIST_ENTITY_ENTRY.entityType(), 0, 0);
+        MobEntity target = frozen(context, EntityType.IRON_GOLEM, new BlockPos(1, 2, 1));
+        target.refreshPositionAndAngles(mercenary.getX() + 4, mercenary.getY(), mercenary.getZ(), 0, 0);
+        mercenary.equipStack(EquipmentSlot.MAINHAND, new ItemStack(Items.CROSSBOW));
+        mercenary.setTarget(target);
+        HeldAbilities abilities = new HeldAbilities(mercenary);
+        abilities.tick(world, loadout("{\"mainhand\":[{\"item\":\"minecraft:crossbow\",\"spells\":[\"rpg-minibosses-gametest:item_use_buff_test\"],\"ability\":{\"chance\":1,\"interval\":1,\"cooldown\":40}}]}"));
+        check(abilities.readyAt(Hand.MAIN_HAND) == 0, "item use spell with no arrow perks got cast");
+        context.complete();
+    }
+
+    @GameTest(templateName = EMPTY_STRUCTURE)
+    public void arrowSpellNeedsLineOfSight(TestContext context) {
+        ServerWorld world = context.getWorld();
+        ArtilleristEntity mercenary = boss(context, RPGMinibossesEntities.ARTILLERIST_ENTITY_ENTRY.entityType(), 0, 0);
+        MobEntity target = frozen(context, EntityType.IRON_GOLEM, new BlockPos(1, 2, 1));
+        target.refreshPositionAndAngles(mercenary.getX() + 5, mercenary.getY(), mercenary.getZ(), 0, 0);
+        for (int y = 1; y <= 6; y++) {
+            for (int z = 0; z <= 2; z++) {
+                context.setBlockState(new BlockPos(3, y, z), Blocks.STONE);
+            }
+        }
+        mercenary.equipStack(EquipmentSlot.MAINHAND, new ItemStack(Items.CROSSBOW));
+        mercenary.setTarget(target);
+        HeldAbilities abilities = new HeldAbilities(mercenary);
+        abilities.tick(world, loadout("{\"mainhand\":[{\"item\":\"minecraft:crossbow\",\"spells\":[\"rpg-minibosses-gametest:arrow_test\"],\"ability\":{\"chance\":1,\"interval\":1,\"cooldown\":40}}]}"));
+        check(abilities.readyAt(Hand.MAIN_HAND) == 0, "shot an arrow spell through a wall");
+        context.complete();
+    }
+
+    @GameTest(templateName = EMPTY_STRUCTURE)
+    public void spellPoolList(TestContext context) {
+        ServerWorld world = context.getWorld();
+        Loadout loadout = loadout("{\"mainhand\":[{\"item\":\"minecraft:stick\",\"spell_pool\":[\"rpg-minibosses-gametest:heals\",\"rpg-minibosses-gametest:test\"],\"ability\":{\"chance\":1,\"interval\":1,\"cooldown\":40}}]}");
+        check(loadout.mainhand().get(0).spellPools().size() == 2, "spell_pool list not parsed");
+        MobEntity mob = fighter(context, new ItemStack(Items.STICK), 4);
+        HeldAbilities abilities = new HeldAbilities(mob);
+        abilities.tick(world, loadout);
+        check(abilities.readyAt(Hand.MAIN_HAND) == world.getTime() + 40, "second pool in the list was not read");
+        check(mob.hasStatusEffect(StatusEffects.ABSORPTION), "pool spell had no effect");
+        context.complete();
+    }
+
+    @GameTest(templateName = EMPTY_STRUCTURE)
+    public void shippedSpellEntriesReachFar(TestContext context) {
+        for (EntityType<?> type : List.of(RPGMinibossesEntities.ARTILLERIST_ENTITY_ENTRY.entityType(), RPGMinibossesEntities.M_ARTILLERIST_ENTITY_ENTRY.entityType(),
+                RPGMinibossesEntities.ARCHMAGE_FIRE_ENTITY_ENTRY.entityType(), RPGMinibossesEntities.M_ARCHMAGE_FIRE_ENTITY_ENTRY.entityType())) {
+            Loadout loadout = Loadouts.get(type);
+            check(loadout != null, type + " loadout missing");
+            for (LoadoutEntry entry : loadout.mainhand()) {
+                if (!entry.spellPools().isEmpty()) {
+                    check(entry.ability().maxRange() == 24, type + " entry " + entry.spellPools() + " max_range " + entry.ability().maxRange());
+                }
+            }
+        }
         context.complete();
     }
 }
