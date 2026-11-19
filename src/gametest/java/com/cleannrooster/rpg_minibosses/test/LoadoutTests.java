@@ -16,6 +16,7 @@ import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.Registries;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.test.GameTest;
@@ -181,6 +182,48 @@ public class LoadoutTests implements FabricGameTest {
         check(abilities.readyAt(Hand.MAIN_HAND) == world.getTime() + 60, "spell did not go on cooldown");
         Box box = mob.getBoundingBox().expand(8);
         check(!world.getEntitiesByClass(ProjectileEntity.class, box, p -> p.getOwner() == mob).isEmpty(), "no spell projectile spawned");
+        context.complete();
+    }
+
+    @GameTest(templateName = EMPTY_STRUCTURE)
+    public void selfSpellIgnoresRange(TestContext context) {
+        ServerWorld world = context.getWorld();
+        Loadout loadout = loadout("{\"mainhand\":[{\"item\":\"minecraft:stick\",\"spells\":[\"rpg-minibosses-gametest:self_buff\"],\"ability\":{\"chance\":1,\"interval\":1,\"cooldown\":40}}]}");
+        MobEntity mob = fighter(context, new ItemStack(Items.STICK), 5);
+        HeldAbilities abilities = new HeldAbilities(mob);
+        abilities.tick(world, loadout);
+        check(abilities.readyAt(Hand.MAIN_HAND) == world.getTime() + 40, "self spell should cast with the target past spell range");
+        context.complete();
+    }
+
+    @GameTest(templateName = EMPTY_STRUCTURE)
+    public void unknownItemIsSkipped(TestContext context) {
+        Loadout loadout = loadout("{\"mainhand\":[{\"item\":\"nosuchmod:blade\"},{\"item\":\"minecraft:iron_sword\"}]}");
+        check(loadout.mainhand().size() == 1, "unknown item should be skipped, got " + loadout.mainhand().size());
+        check(loadout.mainhand().get(0).matches(new ItemStack(Items.IRON_SWORD)), "known item should still load");
+        context.complete();
+    }
+
+    @GameTest(templateName = EMPTY_STRUCTURE)
+    public void armorSlotsHaveNoPool(TestContext context) {
+        Loadout loadout = loadout("{\"mainhand\":[{\"item\":\"minecraft:iron_helmet\",\"drop_chance\":1}]}");
+        check(loadout.find(EquipmentSlot.HEAD, new ItemStack(Items.IRON_HELMET)) == null, "armor slot should not read the mainhand pool");
+        check(loadout.find(EquipmentSlot.MAINHAND, new ItemStack(Items.IRON_HELMET)) != null, "mainhand should still match");
+        context.complete();
+    }
+
+    @GameTest(templateName = EMPTY_STRUCTURE)
+    public void cooldownSurvivesSave(TestContext context) {
+        MobEntity mob = fighter(context, ItemStack.EMPTY, 3);
+        HeldAbilities abilities = new HeldAbilities(mob);
+        NbtCompound nbt = new NbtCompound();
+        nbt.putLongArray("HeldAbilityReadyAt", new long[]{1234L, 5678L});
+        abilities.read(nbt);
+        NbtCompound saved = new NbtCompound();
+        abilities.write(saved);
+        HeldAbilities loaded = new HeldAbilities(mob);
+        loaded.read(saved);
+        check(loaded.readyAt(Hand.MAIN_HAND) == 1234L && loaded.readyAt(Hand.OFF_HAND) == 5678L, "readyAt lost on save");
         context.complete();
     }
 

@@ -1,0 +1,24 @@
+{
+  "school": "FROST",
+  "range": 1,
+  "cast": {
+    "duration": 0
+  },
+  "release": {
+    "target": {
+      "type": "SELF"
+    }
+  },
+  "impact": [
+    {
+      "action": {
+        "type": "STATUS_EFFECT",
+        "status_effect": {
+          "effect_id": "minecraft:absorption",
+          "duration": 10,
+          "amplifier": 0
+        }
+      }
+    }
+  ]
+}
