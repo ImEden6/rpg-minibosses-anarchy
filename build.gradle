@@ -59,6 +59,34 @@ repositories {
 	// for more information about repositories.
 }
 
+sourceSets {
+	gametest {
+		compileClasspath += sourceSets.main.compileClasspath + sourceSets.main.output
+		runtimeClasspath += sourceSets.main.runtimeClasspath + sourceSets.main.output
+	}
+}
+
+loom {
+	runs {
+		gametest {
+			server()
+			name = "Game Test"
+			vmArg "-Dfabric-api.gametest"
+			vmArg "-Dfabric-api.gametest.report-file=${project.layout.buildDirectory.get()}/gametest/junit.xml"
+			runDir "build/gametest"
+			source sourceSets.gametest
+		}
+	}
+	mods {
+		"rpg-minibosses" {
+			sourceSet sourceSets.main
+		}
+		"rpg-minibosses-gametest" {
+			sourceSet sourceSets.gametest
+		}
+	}
+}
+
 dependencies {
 	// To change the versions see the gradle.properties file
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"

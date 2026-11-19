@@ -1,0 +1,16 @@
+{
+	"schemaVersion": 1,
+	"id": "rpg-minibosses-gametest",
+	"version": "1.0.0",
+	"name": "RPG Minibosses gametests",
+	"environment": "*",
+	"entrypoints": {
+		"fabric-gametest": [
+			"com.cleannrooster.rpg_minibosses.test.LoadoutTests"
+		]
+	},
+	"depends": {
+		"rpg-minibosses": "*",
+		"fabric-gametest-api-v1": "*"
+	}
+}
