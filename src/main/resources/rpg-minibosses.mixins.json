@@ -4,13 +4,13 @@
 	"compatibilityLevel": "JAVA_17",
 	"mixins": [
 		"DefaultLootMixin",
-		"PatrolSpawnerMixin"
+		"PatrolSpawnerMixin",
+		"TargetHelperMixin"
 
 	],
 	"client": [
 		"EndSkyMixin",
-		"WorldRendererMixin",
-		"TargetHelperMixin"
+		"WorldRendererMixin"
 
 	],
 	"injectors": {
