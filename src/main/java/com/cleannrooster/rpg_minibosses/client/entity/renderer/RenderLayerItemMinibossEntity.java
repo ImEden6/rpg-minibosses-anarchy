@@ -11,6 +11,7 @@ import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.model.json.ModelTransformationMode;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.ItemStack;
+import net.minecraft.registry.Registries;
 
 public class RenderLayerItemMinibossEntity<T extends MinibossEntity> extends BlockAndItemGeoLayer<MinibossEntity> {
     public RenderLayerItemMinibossEntity(GeoRenderer<MinibossEntity> entityRendererIn) {
@@ -44,13 +45,18 @@ public class RenderLayerItemMinibossEntity<T extends MinibossEntity> extends Blo
         if(animatable instanceof ArtilleristEntity){
             return;
         }
+        boolean simplySwords = Registries.ITEM.getId(stack.getItem()).getNamespace().equals("simplyswords");
         if(animatable instanceof JuggernautEntity){
             poseStack.translate(0,3/16F,-3/16F);
-            poseStack.scale(2F,2F,2F);
+            if(!simplySwords) {
+                poseStack.scale(2F, 2F, 2F);
+            }
         }
         if(animatable instanceof TemplarEntity){
             poseStack.translate(0,3/16F,-3/16F);
-            poseStack.scale(1.5F,1.5F,1.5F);
+            if(!simplySwords) {
+                poseStack.scale(1.5F, 1.5F, 1.5F);
+            }
         }
        /* if (stack == animatable.getMainHandStack()) {
             poseStack.multiply(RotationAxis.POSITIVE_X.rotationDegrees(-90f));
