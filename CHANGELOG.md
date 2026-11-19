@@ -18,7 +18,8 @@
 - Loadout entries whose tag is empty get skipped instead of leaving the hand empty.
 
 ### Fixed
-- Simply Swords weapons held by Juggernauts and Templars aren't scaled up anymore. Their models are already big, so they looked huge.
+- Simply Swords and RPG Series weapons held by Juggernauts and Templars aren't scaled up anymore. Their models are already big, so they looked huge.
+- A boss that cast Death Knights' Remorseless Winter crashed when the effect ran out. It works on bosses now.
 
 ## [1.1.0] - 2026-11-19
 
