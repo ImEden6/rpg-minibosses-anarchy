@@ -11,7 +11,8 @@
         "damage_multiplier": 2,
         "launch_properties": {
           "velocity": 3,
-          "extra_launch_count": 1
+          "extra_launch_count": 1,
+          "extra_launch_delay": 4
         }
       }
     }

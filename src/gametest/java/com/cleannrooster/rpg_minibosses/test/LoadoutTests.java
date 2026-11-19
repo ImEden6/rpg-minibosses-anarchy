@@ -1,5 +1,6 @@
 package com.cleannrooster.rpg_minibosses.test;
 
+import com.cleannrooster.rpg_minibosses.entity.ArchmageFireEntity;
 import com.cleannrooster.rpg_minibosses.entity.ArtilleristEntity;
 import com.cleannrooster.rpg_minibosses.entity.JuggernautEntity;
 import com.cleannrooster.rpg_minibosses.entity.MinibossEntity;
@@ -9,6 +10,7 @@ import com.cleannrooster.rpg_minibosses.loadout.HeldAbilities;
 import com.cleannrooster.rpg_minibosses.loadout.Loadout;
 import com.cleannrooster.rpg_minibosses.loadout.LoadoutEntry;
 import com.cleannrooster.rpg_minibosses.loadout.Loadouts;
+import com.cleannrooster.rpg_minibosses.loadout.SpellMotion;
 import com.google.gson.JsonParser;
 import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
 import net.minecraft.entity.EntityType;
@@ -35,6 +37,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.spell_power.api.SpellSchools;
+import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.SpellContainer;
 import net.spell_engine.internals.SpellContainerHelper;
 import net.spell_engine.internals.arrow.ArrowExtension;
@@ -43,8 +46,10 @@ import net.sweenus.simplyswords.api.AwakeningApi;
 import net.sweenus.simplyswords.world.WeaponAbilityCooldownManager;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 public class LoadoutTests implements FabricGameTest {
+    private static final int MERCENARY_WINDUP = 20;
 
     private static void check(boolean condition, String message) {
         if (!condition) {
@@ -634,7 +639,7 @@ public class LoadoutTests implements FabricGameTest {
         context.complete();
     }
 
-    private static List<PersistentProjectileEntity> spellArrows(TestContext context, String spell, int at, int expected, Runnable then) {
+    private static void spellArrows(TestContext context, String spell, int at, int expected, Consumer<PersistentProjectileEntity> first) {
         ServerWorld world = context.getWorld();
         ArtilleristEntity mercenary = boss(context, RPGMinibossesEntities.ARTILLERIST_ENTITY_ENTRY.entityType(), 0, 0);
         MobEntity target = frozen(context, EntityType.IRON_GOLEM, new BlockPos(1, 2, 1));
@@ -645,28 +650,32 @@ public class LoadoutTests implements FabricGameTest {
         abilities.tick(world, loadout("{\"mainhand\":[{\"item\":\"minecraft:crossbow\",\"spells\":[\"" + spell + "\"],\"ability\":{\"chance\":1,\"interval\":1,\"cooldown\":40,\"max_range\":32}}]}"));
         check(abilities.readyAt(Hand.MAIN_HAND) == world.getTime() + 40, spell + " did not cast");
         Box area = mercenary.getBoundingBox().expand(32);
-        List<PersistentProjectileEntity> arrows = world.getEntitiesByClass(PersistentProjectileEntity.class, area, arrow -> arrow.getOwner() == mercenary);
-        check(arrows.size() == 1, "expected one arrow, got " + arrows.size());
-        check(new Identifier(spell).equals(((ArrowExtension) arrows.get(0)).getCarriedSpellId()), "arrow carries no spell");
-        context.runAtTick(at, () -> {
+        check(world.getEntitiesByClass(PersistentProjectileEntity.class, area, arrow -> arrow.getOwner() == mercenary).isEmpty(), "arrow fired before the shoot_heavy windup");
+        context.runAtTick(MERCENARY_WINDUP + 2, () -> {
+            List<PersistentProjectileEntity> arrows = world.getEntitiesByClass(PersistentProjectileEntity.class, area, arrow -> arrow.getOwner() == mercenary);
+            check(arrows.size() == 1, "expected one arrow after the windup, got " + arrows.size());
+            check(new Identifier(spell).equals(((ArrowExtension) arrows.get(0)).getCarriedSpellId()), "arrow carries no spell");
+            first.accept(arrows.get(0));
+        });
+        context.runAtTick(MERCENARY_WINDUP + at, () -> {
             int count = world.getEntitiesByClass(PersistentProjectileEntity.class, area, arrow -> arrow.getOwner() == mercenary).size();
             check(count == expected, "expected " + expected + " arrows later, got " + count);
-            then.run();
+            context.complete();
         });
-        return arrows;
     }
 
     @GameTest(templateName = EMPTY_STRUCTURE)
     public void mercenaryShootsArrowSpell(TestContext context) {
-        PersistentProjectileEntity arrow = spellArrows(context, "rpg-minibosses-gametest:arrow_test", 4, 2, context::complete).get(0);
-        check(Math.abs(arrow.getDamage() - 4.0) < 0.001, "arrow damage " + arrow.getDamage());
-        check(arrow.isCritical(), "shoot_arrow arrow should crit");
+        spellArrows(context, "rpg-minibosses-gametest:arrow_test", 6, 2, arrow -> {
+            check(Math.abs(arrow.getDamage() - 4.0) < 0.001, "arrow damage " + arrow.getDamage());
+            check(arrow.isCritical(), "shoot_arrow arrow should crit");
+        });
     }
 
     @GameTest(templateName = EMPTY_STRUCTURE)
     public void mercenaryShootsItemUseSpell(TestContext context) {
-        PersistentProjectileEntity arrow = spellArrows(context, "rpg-minibosses-gametest:item_use_arrow_test", 4, 1, context::complete).get(0);
-        check(Math.abs(arrow.getDamage() - 6.0) < 0.001, "arrow perk damage " + arrow.getDamage());
+        spellArrows(context, "rpg-minibosses-gametest:item_use_arrow_test", 6, 1,
+                arrow -> check(Math.abs(arrow.getDamage() - 6.0) < 0.001, "arrow perk damage " + arrow.getDamage()));
     }
 
     @GameTest(templateName = EMPTY_STRUCTURE)
@@ -703,8 +712,7 @@ public class LoadoutTests implements FabricGameTest {
 
     @GameTest(templateName = EMPTY_STRUCTURE)
     public void extraArrowsStopWhenMercenaryDies(TestContext context) {
-        PersistentProjectileEntity arrow = spellArrows(context, "rpg-minibosses-gametest:arrow_test", 4, 1, context::complete).get(0);
-        ((ArtilleristEntity) arrow.getOwner()).setHealth(0);
+        spellArrows(context, "rpg-minibosses-gametest:arrow_test", 6, 1, arrow -> ((ArtilleristEntity) arrow.getOwner()).setHealth(0));
     }
 
     @GameTest(templateName = EMPTY_STRUCTURE)
@@ -794,5 +802,79 @@ public class LoadoutTests implements FabricGameTest {
             }
         }
         context.complete();
+    }
+
+    private static Spell animated(String release, String cast) {
+        Spell spell = new Spell();
+        spell.release = new Spell.Release();
+        spell.release.animation = release;
+        spell.cast = new Spell.Cast();
+        spell.cast.animation = cast;
+        return spell;
+    }
+
+    @GameTest(templateName = EMPTY_STRUCTURE)
+    public void spellMotionFromAnimation(TestContext context) {
+        check(SpellMotion.of(animated("death_knights:obliterate", null)) == SpellMotion.STRIKE, "obliterate");
+        check(SpellMotion.of(animated("death_knights:strike_2h", null)) == SpellMotion.STRIKE, "strike_2h");
+        check(SpellMotion.of(animated("spellbladenext:flameslash", null)) == SpellMotion.STRIKE, "flameslash");
+        check(SpellMotion.of(animated("spell_engine:one_handed_projectile_release", null)) == SpellMotion.CAST, "projectile release");
+        check(SpellMotion.of(animated("spell_engine:one_handed_area_release", null)) == SpellMotion.AREA, "area release");
+        check(SpellMotion.of(animated("spell_engine:dual_handed_ground_release", null)) == SpellMotion.AREA, "ground release");
+        check(SpellMotion.of(animated(null, "spell_engine:two_handed_channeling")) == SpellMotion.CHANNEL, "channel from cast");
+        check(SpellMotion.of(animated("spell_engine:archery_release", null)) == SpellMotion.ARCHERY, "archery");
+        check(SpellMotion.of(animated("spell_engine:shout", null)) == SpellMotion.NONE, "shout should not animate");
+        check(SpellMotion.of(animated("spell_engine:two_handed_spin_static", null)) == SpellMotion.NONE, "whirlwind should not animate");
+        check(SpellMotion.of(animated(null, null)) == SpellMotion.NONE, "no animation");
+        context.complete();
+    }
+
+    private static ArchmageFireEntity archmage(TestContext context) {
+        ArchmageFireEntity archmage = boss(context, RPGMinibossesEntities.ARCHMAGE_FIRE_ENTITY_ENTRY.entityType(), 0, 0);
+        MobEntity target = frozen(context, EntityType.IRON_GOLEM, new BlockPos(1, 2, 1));
+        target.refreshPositionAndAngles(archmage.getX() + 4, archmage.getY(), archmage.getZ(), 0, 0);
+        archmage.equipStack(EquipmentSlot.MAINHAND, new ItemStack(Items.STICK));
+        archmage.setTarget(target);
+        return archmage;
+    }
+
+    @GameTest(templateName = EMPTY_STRUCTURE)
+    public void busyBossSkipsSpell(TestContext context) {
+        ServerWorld world = context.getWorld();
+        ArchmageFireEntity archmage = archmage(context);
+        archmage.spellAnimation(SpellMotion.AREA);
+        HeldAbilities abilities = new HeldAbilities(archmage);
+        abilities.tick(world, spellLoadout("rpg-minibosses-gametest:self_buff"));
+        check(abilities.readyAt(Hand.MAIN_HAND) == 0, "cast while mid wave");
+        context.complete();
+    }
+
+    @GameTest(templateName = EMPTY_STRUCTURE)
+    public void areaSpellWaitsForWave(TestContext context) {
+        ServerWorld world = context.getWorld();
+        ArchmageFireEntity archmage = archmage(context);
+        HeldAbilities abilities = new HeldAbilities(archmage);
+        abilities.tick(world, spellLoadout("rpg-minibosses-gametest:area_buff"));
+        check(abilities.readyAt(Hand.MAIN_HAND) == world.getTime() + 40, "area spell did not cast");
+        check(!archmage.hasStatusEffect(StatusEffects.ABSORPTION), "spell landed before the wave hit");
+        check(archmage.busy(), "boss not busy during the wave");
+        context.runAtTick(22, () -> {
+            check(archmage.hasStatusEffect(StatusEffects.ABSORPTION), "spell never landed after the wave");
+            check(!archmage.busy(), "boss still busy after the wave");
+            context.complete();
+        });
+    }
+
+    @GameTest(templateName = EMPTY_STRUCTURE)
+    public void deadBossDropsWindup(TestContext context) {
+        ServerWorld world = context.getWorld();
+        ArchmageFireEntity archmage = archmage(context);
+        HeldAbilities abilities = new HeldAbilities(archmage);
+        abilities.tick(world, spellLoadout("rpg-minibosses-gametest:area_buff"));
+        context.runAtTick(5, () -> archmage.setHealth(0));
+        context.runAtTick(22, () -> {
+            check(!archmage.hasStatusEffect(StatusEffects.ABSORPTION), "spell released after the boss died");
+            context.complete();
+        });
     }
 }
