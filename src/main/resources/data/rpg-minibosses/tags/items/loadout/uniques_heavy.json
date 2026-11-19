@@ -1,0 +1,25 @@
+{
+  "values": [
+    { "id": "simplyswords:watcher_claymore", "required": false },
+    { "id": "simplyswords:the_devourer", "required": false },
+    { "id": "simplyswords:brimstone_claymore", "required": false },
+    { "id": "simplyswords:watching_warglaive", "required": false },
+    { "id": "simplyswords:stormbringer", "required": false },
+    { "id": "simplyswords:mjolnir", "required": false },
+    { "id": "simplyswords:hearthflame", "required": false },
+    { "id": "simplyswords:soulpyre", "required": false },
+    { "id": "simplyswords:soulkeeper", "required": false },
+    { "id": "simplyswords:thunderbrand", "required": false },
+    { "id": "simplyswords:ribboncleaver", "required": false },
+    { "id": "simplyswords:tempest", "required": false },
+    { "id": "simplyswords:sunfire", "required": false },
+    { "id": "simplyswords:harbinger", "required": false },
+    { "id": "simplyswords:magiscythe", "required": false },
+    { "id": "simplyswords:magispear", "required": false },
+    { "id": "simplyswords:frostfall", "required": false },
+    { "id": "simplyswords:molten_edge", "required": false },
+    { "id": "simplyswords:livyatan", "required": false },
+    { "id": "simplyswords:bramblethorn", "required": false },
+    { "id": "simplyswords:caelestis", "required": false }
+  ]
+}

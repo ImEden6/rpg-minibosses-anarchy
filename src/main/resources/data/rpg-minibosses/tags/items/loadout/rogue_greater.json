@@ -1,0 +1,27 @@
+{
+  "values": [
+    { "id": "rogues:diamond_dagger", "required": false },
+    { "id": "rogues:netherite_dagger", "required": false },
+    { "id": "rogues:ruby_dagger", "required": false },
+    { "id": "rogues:aeternium_dagger", "required": false },
+    { "id": "rogues:diamond_sickle", "required": false },
+    { "id": "rogues:netherite_sickle", "required": false },
+    { "id": "rogues:ruby_sickle", "required": false },
+    { "id": "rogues:aeternium_sickle", "required": false },
+    { "id": "simplyswords:diamond_rapier", "required": false },
+    { "id": "simplyswords:netherite_rapier", "required": false },
+    { "id": "simplyswords:runic_rapier", "required": false },
+    { "id": "simplyswords:diamond_sai", "required": false },
+    { "id": "simplyswords:netherite_sai", "required": false },
+    { "id": "simplyswords:runic_sai", "required": false },
+    { "id": "simplyswords:diamond_cutlass", "required": false },
+    { "id": "simplyswords:netherite_cutlass", "required": false },
+    { "id": "simplyswords:runic_cutlass", "required": false },
+    { "id": "simplyswords:diamond_katana", "required": false },
+    { "id": "simplyswords:netherite_katana", "required": false },
+    { "id": "simplyswords:runic_katana", "required": false },
+    { "id": "simplyswords:diamond_twinblade", "required": false },
+    { "id": "simplyswords:netherite_twinblade", "required": false },
+    { "id": "simplyswords:runic_twinblade", "required": false }
+  ]
+}

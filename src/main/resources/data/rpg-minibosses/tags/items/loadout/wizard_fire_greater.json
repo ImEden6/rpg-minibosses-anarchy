@@ -1,0 +1,9 @@
+{
+  "values": [
+    { "id": "wizards:wand_fire", "required": false },
+    { "id": "wizards:staff_fire", "required": false },
+    { "id": "wizards:staff_ruby_fire", "required": false },
+    { "id": "wizards:staff_netherite_fire", "required": false },
+    { "id": "wizards:wand_netherite_fire", "required": false }
+  ]
+}

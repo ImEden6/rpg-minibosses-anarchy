@@ -1,0 +1,10 @@
+{
+  "values": [
+    { "id": "spellbladenext:arcane_blade", "required": false },
+    { "id": "spellbladenext:arcane_claymore", "required": false },
+    { "id": "spellbladenext:arcane_orb", "required": false },
+    { "id": "spellbladenext:crystal_cutlass", "required": false },
+    { "id": "spellbladenext:starforge", "required": false },
+    { "id": "spellbladenext:voidforge", "required": false }
+  ]
+}

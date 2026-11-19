@@ -1,0 +1,9 @@
+{
+  "values": [
+    { "id": "wizards:wand_arcane", "required": false },
+    { "id": "wizards:staff_arcane", "required": false },
+    { "id": "wizards:staff_crystal_arcane", "required": false },
+    { "id": "wizards:staff_netherite_arcane", "required": false },
+    { "id": "wizards:wand_netherite_arcane", "required": false }
+  ]
+}

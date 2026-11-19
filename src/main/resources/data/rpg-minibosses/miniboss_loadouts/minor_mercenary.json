@@ -1,6 +1,7 @@
 {
   "mainhand": [
-    { "item": "minecraft:crossbow" }
+    { "tag": "rpg-minibosses:loadout/archer_lesser", "spell_pool": "archers:archer", "weight": 4, "ability": {"max_range": 24} },
+    { "item": "minecraft:crossbow", "weight": 1 }
   ],
   "offhand": []
 }

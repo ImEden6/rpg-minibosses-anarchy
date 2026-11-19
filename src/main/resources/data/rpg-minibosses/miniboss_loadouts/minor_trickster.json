@@ -1,6 +1,7 @@
 {
   "mainhand": [
-    { "item": "minecraft:iron_sword" }
+    { "tag": "rpg-minibosses:loadout/rogue_lesser", "spell_pool": "rogues:rogue", "weight": 4 },
+    { "item": "minecraft:iron_sword", "weight": 1 }
   ],
   "offhand": []
 }

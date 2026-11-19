@@ -1,0 +1,25 @@
+{
+  "values": [
+    { "id": "paladins:stone_claymore", "required": false },
+    { "id": "paladins:iron_claymore", "required": false },
+    { "id": "paladins:golden_claymore", "required": false },
+    { "id": "paladins:diamond_claymore", "required": false },
+    { "id": "paladins:wooden_great_hammer", "required": false },
+    { "id": "paladins:stone_great_hammer", "required": false },
+    { "id": "paladins:iron_great_hammer", "required": false },
+    { "id": "paladins:golden_great_hammer", "required": false },
+    { "id": "paladins:diamond_great_hammer", "required": false },
+    { "id": "paladins:iron_mace", "required": false },
+    { "id": "paladins:golden_mace", "required": false },
+    { "id": "paladins:diamond_mace", "required": false },
+    { "id": "simplyswords:iron_claymore", "required": false },
+    { "id": "simplyswords:gold_claymore", "required": false },
+    { "id": "simplyswords:diamond_claymore", "required": false },
+    { "id": "simplyswords:iron_greathammer", "required": false },
+    { "id": "simplyswords:gold_greathammer", "required": false },
+    { "id": "simplyswords:diamond_greathammer", "required": false },
+    { "id": "simplyswords:iron_longsword", "required": false },
+    { "id": "simplyswords:gold_longsword", "required": false },
+    { "id": "simplyswords:diamond_longsword", "required": false }
+  ]
+}

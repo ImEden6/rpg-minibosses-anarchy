@@ -1,0 +1,26 @@
+{
+  "values": [
+    { "id": "rogues:flint_dagger", "required": false },
+    { "id": "rogues:iron_dagger", "required": false },
+    { "id": "rogues:golden_dagger", "required": false },
+    { "id": "rogues:diamond_dagger", "required": false },
+    { "id": "rogues:iron_sickle", "required": false },
+    { "id": "rogues:golden_sickle", "required": false },
+    { "id": "rogues:diamond_sickle", "required": false },
+    { "id": "simplyswords:iron_rapier", "required": false },
+    { "id": "simplyswords:gold_rapier", "required": false },
+    { "id": "simplyswords:diamond_rapier", "required": false },
+    { "id": "simplyswords:iron_sai", "required": false },
+    { "id": "simplyswords:gold_sai", "required": false },
+    { "id": "simplyswords:diamond_sai", "required": false },
+    { "id": "simplyswords:iron_cutlass", "required": false },
+    { "id": "simplyswords:gold_cutlass", "required": false },
+    { "id": "simplyswords:diamond_cutlass", "required": false },
+    { "id": "simplyswords:iron_katana", "required": false },
+    { "id": "simplyswords:gold_katana", "required": false },
+    { "id": "simplyswords:diamond_katana", "required": false },
+    { "id": "simplyswords:iron_twinblade", "required": false },
+    { "id": "simplyswords:gold_twinblade", "required": false },
+    { "id": "simplyswords:diamond_twinblade", "required": false }
+  ]
+}

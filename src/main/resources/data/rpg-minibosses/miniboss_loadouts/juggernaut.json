@@ -1,6 +1,10 @@
 {
   "mainhand": [
-    { "item": "minecraft:iron_axe" }
+    { "tag": "rpg-minibosses:loadout/warrior_greater", "spell_pool": "rogues:warrior", "weight": 3 },
+    { "tag": "rpg-minibosses:loadout/paladin_greater", "spell_pool": "paladins:paladin", "weight": 3 },
+    { "tag": "rpg-minibosses:loadout/death_knight_greater", "spell_pool": ["death_knights:blood", "death_knights:frost", "death_knights:unholy"], "weight": 3 },
+    { "tag": "rpg-minibosses:loadout/uniques_heavy", "weight": 2 },
+    { "item": "minecraft:iron_axe", "weight": 1 }
   ],
   "offhand": []
 }

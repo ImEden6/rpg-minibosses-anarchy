@@ -1,6 +1,9 @@
 {
   "mainhand": [
-    { "item": "minecraft:diamond_sword" }
+    { "tag": "rpg-minibosses:loadout/paladin_lesser", "spell_pool": "paladins:paladin", "weight": 3 },
+    { "tag": "rpg-minibosses:loadout/priest_lesser", "spell_pool": "paladins:priest", "weight": 2 },
+    { "tag": "rpg-minibosses:loadout/death_knight_lesser", "spell_pool": ["death_knights:blood", "death_knights:frost", "death_knights:unholy"], "weight": 3 },
+    { "item": "minecraft:diamond_sword", "weight": 1 }
   ],
   "offhand": []
 }

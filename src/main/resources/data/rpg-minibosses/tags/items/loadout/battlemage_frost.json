@@ -1,0 +1,8 @@
+{
+  "values": [
+    { "id": "spellbladenext:frost_blade", "required": false },
+    { "id": "spellbladenext:frost_claymore", "required": false },
+    { "id": "spellbladenext:frost_orb", "required": false },
+    { "id": "spellbladenext:glacial_gladius", "required": false }
+  ]
+}

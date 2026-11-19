@@ -1,0 +1,9 @@
+{
+  "values": [
+    { "id": "wizards:wand_frost", "required": false },
+    { "id": "wizards:staff_frost", "required": false },
+    { "id": "wizards:staff_smaragdant_frost", "required": false },
+    { "id": "wizards:staff_netherite_frost", "required": false },
+    { "id": "wizards:wand_netherite_frost", "required": false }
+  ]
+}

@@ -1,6 +1,10 @@
 {
   "mainhand": [
-    { "item": "minecraft:crossbow" }
+    { "tag": "rpg-minibosses:loadout/archer_greater", "spell_pool": "archers:archer", "weight": 1, "ability": {"max_range": 24} },
+    { "tag": "rpg-minibosses:loadout/archer_greater", "spell_pool": ["archers:archer", "archers_expansion:deadeye"], "weight": 1, "ability": {"max_range": 24} },
+    { "tag": "rpg-minibosses:loadout/archer_greater", "spell_pool": ["archers:archer", "archers_expansion:tundra_hunter"], "weight": 1, "ability": {"max_range": 24} },
+    { "tag": "rpg-minibosses:loadout/archer_greater", "spell_pool": ["archers:archer", "archers_expansion:war_archer"], "weight": 1, "ability": {"max_range": 24} },
+    { "item": "minecraft:crossbow", "weight": 1 }
   ],
   "offhand": []
 }

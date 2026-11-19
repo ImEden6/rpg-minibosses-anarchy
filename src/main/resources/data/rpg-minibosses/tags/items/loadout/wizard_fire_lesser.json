@@ -1,0 +1,8 @@
+{
+  "values": [
+    { "id": "wizards:wand_novice", "required": false },
+    { "id": "wizards:wand_fire", "required": false },
+    { "id": "wizards:staff_wizard", "required": false },
+    { "id": "wizards:staff_fire", "required": false }
+  ]
+}

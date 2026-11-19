@@ -1,0 +1,25 @@
+{
+  "values": [
+    { "id": "paladins:diamond_claymore", "required": false },
+    { "id": "paladins:netherite_claymore", "required": false },
+    { "id": "paladins:ruby_claymore", "required": false },
+    { "id": "paladins:aeternium_claymore", "required": false },
+    { "id": "paladins:diamond_great_hammer", "required": false },
+    { "id": "paladins:netherite_great_hammer", "required": false },
+    { "id": "paladins:ruby_great_hammer", "required": false },
+    { "id": "paladins:aeternium_great_hammer", "required": false },
+    { "id": "paladins:diamond_mace", "required": false },
+    { "id": "paladins:netherite_mace", "required": false },
+    { "id": "paladins:ruby_mace", "required": false },
+    { "id": "paladins:aeternium_mace", "required": false },
+    { "id": "simplyswords:diamond_claymore", "required": false },
+    { "id": "simplyswords:netherite_claymore", "required": false },
+    { "id": "simplyswords:runic_claymore", "required": false },
+    { "id": "simplyswords:diamond_greathammer", "required": false },
+    { "id": "simplyswords:netherite_greathammer", "required": false },
+    { "id": "simplyswords:runic_greathammer", "required": false },
+    { "id": "simplyswords:diamond_longsword", "required": false },
+    { "id": "simplyswords:netherite_longsword", "required": false },
+    { "id": "simplyswords:runic_longsword", "required": false }
+  ]
+}

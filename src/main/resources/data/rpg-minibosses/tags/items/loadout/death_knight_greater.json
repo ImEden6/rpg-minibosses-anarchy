@@ -1,0 +1,16 @@
+{
+  "values": [
+    { "id": "death_knights:diamond_runeblade", "required": false },
+    { "id": "death_knights:netherite_runeblade", "required": false },
+    { "id": "death_knights:ruby_runeblade", "required": false },
+    { "id": "death_knights:aeternium_runeblade", "required": false },
+    { "id": "death_knights:great_diamond_runeblade", "required": false },
+    { "id": "death_knights:great_netherite_runeblade", "required": false },
+    { "id": "death_knights:great_ruby_runeblade", "required": false },
+    { "id": "death_knights:great_aeternium_runeblade", "required": false },
+    { "id": "death_knights:great_diamond_runeaxe", "required": false },
+    { "id": "death_knights:great_netherite_runeaxe", "required": false },
+    { "id": "death_knights:great_ruby_runeaxe", "required": false },
+    { "id": "death_knights:great_aeternium_runeaxe", "required": false }
+  ]
+}

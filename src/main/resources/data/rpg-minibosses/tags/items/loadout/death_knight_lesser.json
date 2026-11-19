@@ -1,0 +1,10 @@
+{
+  "values": [
+    { "id": "death_knights:initiate_runeblade", "required": false },
+    { "id": "death_knights:diamond_runeblade", "required": false },
+    { "id": "death_knights:great_iron_runeblade", "required": false },
+    { "id": "death_knights:great_diamond_runeblade", "required": false },
+    { "id": "death_knights:great_iron_runeaxe", "required": false },
+    { "id": "death_knights:great_diamond_runeaxe", "required": false }
+  ]
+}
