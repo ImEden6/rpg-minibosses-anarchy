@@ -1,6 +1,7 @@
 package com.cleannrooster.rpg_minibosses.test;
 
 import com.cleannrooster.rpg_minibosses.entity.JuggernautEntity;
+import com.cleannrooster.rpg_minibosses.entity.MinibossEntity;
 import com.cleannrooster.rpg_minibosses.entity.RPGMinibossesEntities;
 import com.cleannrooster.rpg_minibosses.entity.TemplarEntity;
 import com.cleannrooster.rpg_minibosses.loadout.HeldAbilities;
@@ -18,6 +19,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.test.GameTest;
 import net.minecraft.test.GameTestException;
@@ -26,6 +28,8 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
+import net.spell_power.api.SpellSchools;
+import net.minecraft.util.math.random.Random;
 import net.sweenus.simplyswords.api.AwakeningApi;
 import net.sweenus.simplyswords.world.WeaponAbilityCooldownManager;
 
@@ -224,6 +228,115 @@ public class LoadoutTests implements FabricGameTest {
         HeldAbilities loaded = new HeldAbilities(mob);
         loaded.read(saved);
         check(loaded.readyAt(Hand.MAIN_HAND) == 1234L && loaded.readyAt(Hand.OFF_HAND) == 5678L, "readyAt lost on save");
+        context.complete();
+    }
+
+    private static Loadout spellLoadout(String spell) {
+        return loadout("{\"mainhand\":[{\"item\":\"minecraft:stick\",\"spells\":[\"" + spell + "\"],\"ability\":{\"chance\":1,\"interval\":1,\"cooldown\":40}}]}");
+    }
+
+    private static <T extends MinibossEntity> T boss(TestContext context, EntityType<T> type, double x, double z) {
+        T boss = context.spawnEntity(type, new BlockPos(1, 2, 1));
+        boss.setAiDisabled(true);
+        boss.setNoGravity(true);
+        boss.refreshPositionAndAngles(boss.getX() + x, boss.getY(), boss.getZ() + z, 0, 0);
+        return boss;
+    }
+
+    @GameTest(templateName = EMPTY_STRUCTURE)
+    public void areaSpellSkipsBosses(TestContext context) {
+        ServerWorld world = context.getWorld();
+        JuggernautEntity caster = boss(context, RPGMinibossesEntities.JUGGERNAUT_ENTITY_ENTRY.entityType(), 0, 0);
+        TemplarEntity templar = boss(context, RPGMinibossesEntities.TEMPLAR_ENTITY_ENTRY.entityType(), 0, 2);
+        MobEntity golem = frozen(context, EntityType.IRON_GOLEM, new BlockPos(1, 2, 1));
+        golem.refreshPositionAndAngles(caster.getX() + 2, caster.getY(), caster.getZ(), 0, 0);
+        context.waitAndRun(2, () -> {
+            caster.removeStatusEffect(caster.getIntroEffect().value());
+            templar.removeStatusEffect(templar.getIntroEffect().value());
+        });
+        context.waitAndRun(4, () -> {
+            check(caster.notPetrified() && templar.notPetrified(), "bosses still petrified");
+            caster.equipStack(EquipmentSlot.MAINHAND, new ItemStack(Items.STICK));
+            caster.getAttributeInstance(SpellSchools.FIRE.attribute).setBaseValue(20);
+            caster.setTarget(golem);
+            float templarHealth = templar.getHealth();
+            float golemHealth = golem.getHealth();
+            HeldAbilities abilities = new HeldAbilities(caster);
+            abilities.tick(world, spellLoadout("rpg-minibosses:fire_nova"));
+            check(abilities.readyAt(Hand.MAIN_HAND) == world.getTime() + 40, "nova did not cast");
+            check(golem.getHealth() < golemHealth, "nova should hit the target");
+            check(templar.getHealth() == templarHealth, "nova should not hit another miniboss");
+            context.complete();
+        });
+    }
+
+    @GameTest(templateName = EMPTY_STRUCTURE)
+    public void otherSpellTypesCast(TestContext context) {
+        ServerWorld world = context.getWorld();
+        for (String spell : new String[]{"meteor_test", "cloud_test", "beam_test"}) {
+            MobEntity mob = fighter(context, new ItemStack(Items.STICK), 4);
+            HeldAbilities abilities = new HeldAbilities(mob);
+            abilities.tick(world, spellLoadout("rpg-minibosses-gametest:" + spell));
+            check(abilities.readyAt(Hand.MAIN_HAND) == world.getTime() + 40, spell + " did not cast");
+        }
+        context.complete();
+    }
+
+    @GameTest(templateName = EMPTY_STRUCTURE)
+    public void bossSavesCooldowns(TestContext context) {
+        ServerWorld world = context.getWorld();
+        JuggernautEntity boss = context.spawnEntity(RPGMinibossesEntities.JUGGERNAUT_ENTITY_ENTRY.entityType(), new BlockPos(1, 2, 1));
+        NbtCompound cooldowns = new NbtCompound();
+        cooldowns.putLongArray("HeldAbilityReadyAt", new long[]{world.getTime() + 500, world.getTime() + 300});
+        boss.getHeldAbilities().read(cooldowns);
+        NbtCompound saved = boss.writeNbt(new NbtCompound());
+        MinibossEntity loaded = RPGMinibossesEntities.JUGGERNAUT_ENTITY_ENTRY.entityType().create(world);
+        loaded.readNbt(saved);
+        check(loaded.getHeldAbilities().readyAt(Hand.MAIN_HAND) == world.getTime() + 500, "mainhand cooldown lost on save");
+        check(loaded.getHeldAbilities().readyAt(Hand.OFF_HAND) == world.getTime() + 300, "offhand cooldown lost on save");
+        context.complete();
+    }
+
+    @GameTest(templateName = EMPTY_STRUCTURE)
+    public void tagEntries(TestContext context) {
+        Random random = context.getWorld().getRandom();
+        Loadout loadout = loadout("{\"mainhand\":[{\"tag\":\"minecraft:planks\"}],\"offhand\":[{\"tag\":\"rpg-minibosses-gametest:nothing\"}]}");
+        LoadoutEntry planks = loadout.mainhand().get(0);
+        for (int i = 0; i < 20; i++) {
+            check(planks.create(random).isIn(ItemTags.PLANKS), "tag entry made something outside the tag");
+        }
+        check(planks.matches(new ItemStack(Items.BIRCH_PLANKS)), "tag entry should match any plank");
+        check(!planks.matches(new ItemStack(Items.STICK)), "tag entry matched a stick");
+        check(loadout.offhand().get(0).create(random).isEmpty(), "empty tag should give nothing");
+        context.complete();
+    }
+
+    @GameTest(templateName = EMPTY_STRUCTURE)
+    public void weightedRoll(TestContext context) {
+        Random random = context.getWorld().getRandom();
+        Loadout loadout = loadout("{\"mainhand\":[{\"item\":\"minecraft:iron_sword\",\"weight\":0},{\"item\":\"minecraft:air\",\"weight\":1}],\"offhand\":[{\"item\":\"minecraft:shield\",\"weight\":0}]}");
+        for (int i = 0; i < 50; i++) {
+            LoadoutEntry entry = loadout.roll(EquipmentSlot.MAINHAND, random);
+            check(entry != null && entry.create(random).isEmpty(), "weight 0 entry got rolled");
+        }
+        check(loadout.roll(EquipmentSlot.OFFHAND, random) == null, "all-zero weights should roll nothing");
+        Loadout split = loadout("{\"mainhand\":[{\"item\":\"minecraft:iron_sword\",\"weight\":3},{\"item\":\"minecraft:stick\",\"weight\":1}]}");
+        int swords = 0;
+        for (int i = 0; i < 400; i++) {
+            if (split.roll(EquipmentSlot.MAINHAND, random).create(random).isOf(Items.IRON_SWORD)) {
+                swords++;
+            }
+        }
+        check(swords > 240 && swords < 360, "3:1 weights gave " + swords + "/400 swords");
+        context.complete();
+    }
+
+    @GameTest(templateName = EMPTY_STRUCTURE)
+    public void entryNbtApplies(TestContext context) {
+        Loadout loadout = loadout("{\"mainhand\":[{\"item\":\"minecraft:iron_sword\",\"nbt\":\"{Custom:7,Damage:5}\"}]}");
+        ItemStack stack = loadout.mainhand().get(0).create(context.getWorld().getRandom());
+        check(stack.getNbt() != null && stack.getNbt().getInt("Custom") == 7, "custom nbt missing");
+        check(stack.getDamage() == 5, "damage nbt not applied, got " + stack.getDamage());
         context.complete();
     }
 

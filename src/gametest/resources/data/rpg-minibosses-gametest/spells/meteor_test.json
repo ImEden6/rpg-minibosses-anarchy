@@ -1,0 +1,23 @@
+{
+  "school": "FIRE",
+  "range": 32,
+  "release": {
+    "target": {
+      "type": "METEOR",
+      "meteor": {
+        "launch_height": 8,
+        "projectile": {}
+      }
+    }
+  },
+  "impact": [
+    {
+      "action": {
+        "type": "DAMAGE",
+        "damage": {
+          "spell_power_coefficient": 0.5
+        }
+      }
+    }
+  ]
+}

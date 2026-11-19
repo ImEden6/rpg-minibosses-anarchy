@@ -1,0 +1,26 @@
+{
+  "school": "FROST",
+  "range": 1,
+  "release": {
+    "target": {
+      "type": "CLOUD",
+      "cloud": {
+        "volume": {
+          "radius": 2
+        },
+        "time_to_live_seconds": 2,
+        "impact_tick_interval": 5
+      }
+    }
+  },
+  "impact": [
+    {
+      "action": {
+        "type": "DAMAGE",
+        "damage": {
+          "spell_power_coefficient": 0.5
+        }
+      }
+    }
+  ]
+}

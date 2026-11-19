@@ -1,0 +1,20 @@
+{
+  "school": "ARCANE",
+  "range": 16,
+  "release": {
+    "target": {
+      "type": "BEAM",
+      "beam": {}
+    }
+  },
+  "impact": [
+    {
+      "action": {
+        "type": "DAMAGE",
+        "damage": {
+          "spell_power_coefficient": 0.5
+        }
+      }
+    }
+  ]
+}
