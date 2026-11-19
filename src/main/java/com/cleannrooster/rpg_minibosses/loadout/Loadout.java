@@ -43,7 +43,7 @@ public record Loadout(List<LoadoutEntry> mainhand, List<LoadoutEntry> offhand) {
 
     @Nullable
     public LoadoutEntry roll(EquipmentSlot slot, Random random) {
-        List<LoadoutEntry> entries = pool(slot);
+        List<LoadoutEntry> entries = pool(slot).stream().filter(LoadoutEntry::available).toList();
         int total = entries.stream().mapToInt(LoadoutEntry::weight).sum();
         if (total <= 0) {
             return null;

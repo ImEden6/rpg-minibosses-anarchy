@@ -113,7 +113,11 @@ dependencies {
 	implementation("com.github.LlamaLad7:MixinExtras:${project.mixin_extras_version}")
 	modImplementation("dev.emi:trinkets:${project.trinkets_version}")
 
-	modImplementation("maven.modrinth:simply-swords:${project.simply_swords_version}")
+	if (project.hasProperty('noSimplySwords')) {
+		modCompileOnly("maven.modrinth:simply-swords:${project.simply_swords_version}")
+	} else {
+		modImplementation("maven.modrinth:simply-swords:${project.simply_swords_version}")
+	}
 	modImplementation("maven.modrinth:architectury-api:${project.architectury_version}")
 	modImplementation("maven.modrinth:fzzy-config:${project.fzzy_config_version}")
 	modImplementation("maven.modrinth:simply-tooltips:${project.simply_tooltips_version}")
@@ -183,8 +187,8 @@ def modrinthId = modrinth_project_id.trim()
 def curseforgeId = curseforge_project_id.trim()
 def toModrinth = !modrinthId.isEmpty()
 def toCurseforge = !curseforgeId.isEmpty()
-def modrinthRequires = ['fabric-api', 'spell-engine', 'extra-rpg-attributes', 'azurelib', 'simply-swords']
-def curseforgeRequires = ['fabric-api', 'spell-engine', 'extra-spell-attributes', 'azurelib', 'simply-swords']
+def modrinthRequires = ['fabric-api', 'spell-engine', 'extra-rpg-attributes', 'azurelib']
+def curseforgeRequires = ['fabric-api', 'spell-engine', 'extra-spell-attributes', 'azurelib']
 
 publishMods {
 	file = remapJar.archiveFile
@@ -202,6 +206,7 @@ publishMods {
 			accessToken = providers.environmentVariable('MODRINTH_TOKEN')
 			minecraftVersions.add(releaseMinecraft)
 			requires(*modrinthRequires)
+			optional('simply-swords')
 		}
 	}
 
@@ -214,6 +219,7 @@ publishMods {
 			client = true
 			server = true
 			requires(*curseforgeRequires)
+			optional('simply-swords')
 		}
 	}
 }

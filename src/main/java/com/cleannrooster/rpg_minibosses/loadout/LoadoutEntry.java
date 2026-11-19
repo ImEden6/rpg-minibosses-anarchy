@@ -16,15 +16,14 @@ import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.JsonHelper;
 import net.minecraft.util.math.random.Random;
-import net.sweenus.simplyswords.api.AwakeningApi;
-import net.sweenus.simplyswords.registry.ComponentTypeRegistry;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public record LoadoutEntry(@Nullable Item item, @Nullable TagKey<Item> tag, int weight, @Nullable Integer awakening,
-                           @Nullable Float dropChance, @Nullable NbtCompound nbt, List<Identifier> spells, AbilitySettings ability) {
+                           @Nullable Float dropChance, @Nullable NbtCompound nbt, List<Identifier> spells, List<Identifier> spellPools,
+                           AbilitySettings ability) {
 
     @Nullable
     public static LoadoutEntry fromJson(JsonObject json) throws CommandSyntaxException {
@@ -44,6 +43,15 @@ public record LoadoutEntry(@Nullable Item item, @Nullable TagKey<Item> tag, int 
         for (JsonElement spell : JsonHelper.getArray(json, "spells", new com.google.gson.JsonArray())) {
             spells.add(new Identifier(spell.getAsString()));
         }
+        List<Identifier> spellPools = new ArrayList<>();
+        JsonElement pools = json.get("spell_pool");
+        if (pools != null && pools.isJsonArray()) {
+            for (JsonElement pool : pools.getAsJsonArray()) {
+                spellPools.add(new Identifier(pool.getAsString()));
+            }
+        } else if (pools != null) {
+            spellPools.add(new Identifier(pools.getAsString()));
+        }
         return new LoadoutEntry(
                 item,
                 tag,
@@ -52,7 +60,12 @@ public record LoadoutEntry(@Nullable Item item, @Nullable TagKey<Item> tag, int 
                 json.has("drop_chance") ? JsonHelper.getFloat(json, "drop_chance") : null,
                 json.has("nbt") ? StringNbtReader.parse(JsonHelper.getString(json, "nbt")) : null,
                 spells,
+                spellPools,
                 AbilitySettings.fromJson(JsonHelper.getObject(json, "ability", new JsonObject())));
+    }
+
+    public boolean available() {
+        return tag == null || Registries.ITEM.iterateEntries(tag).iterator().hasNext();
     }
 
     public boolean matches(ItemStack stack) {
@@ -73,8 +86,9 @@ public record LoadoutEntry(@Nullable Item item, @Nullable TagKey<Item> tag, int 
         if (nbt != null) {
             stack.getOrCreateNbt().copyFrom(nbt);
         }
-        int level = awakening != null ? awakening : ComponentTypeRegistry.AWAKENING.contains(stack) ? AwakeningApi.getLevel(stack) : 8;
-        AwakeningApi.setLevel(stack, level);
+        if (Loadouts.SIMPLY_SWORDS) {
+            SimplySwords.awaken(stack, awakening);
+        }
         return stack;
     }
 }

@@ -1,6 +1,7 @@
 package com.cleannrooster.rpg_minibosses.loadout;
 
 import com.cleannrooster.rpg_minibosses.RPGMinibosses;
+import com.cleannrooster.rpg_minibosses.entity.MinibossEntity;
 import com.cleannrooster.rpg_minibosses.entity.RPGMinibossesEntities;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
@@ -17,19 +18,16 @@ import net.spell_engine.api.spell.SpellInfo;
 import net.spell_engine.internals.SpellContainerHelper;
 import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.internals.SpellRegistry;
+import net.spell_engine.internals.WorldScheduler;
 import net.spell_engine.particle.ParticleHelper;
 import net.spell_engine.utils.SoundHelper;
 import net.spell_engine.utils.TargetHelper;
 import net.spell_power.api.SpellPower;
-import net.sweenus.simplyswords.api.SimplySwordsAPI;
-import net.sweenus.simplyswords.api.WeaponAbilityActivationSource;
-import net.sweenus.simplyswords.api.WeaponAbilityContext;
-import net.sweenus.simplyswords.item.interfaces.UniqueWeaponActiveAbility;
-import net.sweenus.simplyswords.world.WeaponAbilityCooldownManager;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -47,7 +45,7 @@ public class HeldAbilities {
         for (Hand hand : Hand.values()) {
             ItemStack stack = mob.getStackInHand(hand);
             if (isSword(stack)) {
-                WeaponAbilityCooldownManager.setCooldown(world, mob, stack, 2);
+                SimplySwords.hold(world, mob, stack);
             }
         }
         LivingEntity target = mob.getTarget();
@@ -97,86 +95,113 @@ public class HeldAbilities {
         }
         AbilitySettings settings = settings(entry(loadout, Hand.MAIN_HAND));
         if (!RPGMinibossesEntities.config.heldAbilities || !settings.enabled() || readyAt[0] > world.getTime()) {
-            WeaponAbilityCooldownManager.setCooldown(world, mob, stack, 2);
+            SimplySwords.hold(world, mob, stack);
             return false;
         }
-        WeaponAbilityCooldownManager.clearCooldown(mob, stack);
+        SimplySwords.release(mob, stack);
         return true;
     }
 
     public void closeParry(ServerWorld world, @Nullable Loadout loadout) {
         ItemStack stack = mob.getMainHandStack();
-        if (WeaponAbilityCooldownManager.isCoolingDown(world, mob, stack)) {
-            AbilitySettings settings = settings(entry(loadout, Hand.MAIN_HAND));
-            readyAt[0] = readyTime(world, swordCooldown(context(world, stack, Hand.MAIN_HAND, mob.getTarget()), settings));
+        if (!isSword(stack)) {
+            return;
         }
-        WeaponAbilityCooldownManager.setCooldown(world, mob, stack, 2);
+        if (SimplySwords.coolingDown(world, mob, stack)) {
+            AbilitySettings settings = settings(entry(loadout, Hand.MAIN_HAND));
+            readyAt[0] = readyTime(world, swordCooldown(world, stack, Hand.MAIN_HAND, mob.getTarget(), settings));
+        }
+        SimplySwords.hold(world, mob, stack);
     }
 
     private int useSword(ServerWorld world, ItemStack stack, Hand hand, LivingEntity target, AbilitySettings settings) {
-        WeaponAbilityContext context = context(world, stack, hand, target);
-        WeaponAbilityCooldownManager.clearCooldown(mob, stack);
-        int cooldown = swordCooldown(context, settings);
-        boolean used = SimplySwordsAPI.tryActivateWeaponAbility(context);
-        WeaponAbilityCooldownManager.setCooldown(world, mob, stack, 2);
+        SimplySwords.release(mob, stack);
+        int cooldown = swordCooldown(world, stack, hand, target, settings);
+        boolean used = SimplySwords.activate(world, mob, stack, hand, target);
+        SimplySwords.hold(world, mob, stack);
         return used ? cooldown : -1;
     }
 
     private int castSpell(ServerWorld world, ItemStack stack, LivingEntity target, @Nullable LoadoutEntry entry, AbilitySettings settings) {
-        List<String> ids = entry != null && !entry.spells().isEmpty()
-                ? entry.spells().stream().map(Identifier::toString).toList()
-                : spellsOf(stack);
-        if (ids.isEmpty()) {
-            return -1;
+        Set<Identifier> ids = new LinkedHashSet<>(entry != null && !entry.spells().isEmpty() ? entry.spells() : spellsOf(stack));
+        if (entry != null) {
+            for (Identifier pool : entry.spellPools()) {
+                ids.addAll(SpellRegistry.spellPool(pool).spellIds());
+            }
         }
-        List<Identifier> usable = new ArrayList<>();
-        for (String raw : ids) {
-            Identifier spellId = new Identifier(raw);
+        List<SpellInfo> usable = new ArrayList<>();
+        for (Identifier spellId : ids) {
             Spell candidate = SpellRegistry.getSpell(spellId);
             if (candidate == null) {
                 if (MISSING_SPELLS.add(spellId)) {
                     RPGMinibosses.LOGGER.warn("Unknown spell {} on {}", spellId, stack);
                 }
             } else if (canCast(candidate, target)) {
-                usable.add(spellId);
+                usable.add(new SpellInfo(candidate, spellId));
             }
         }
         if (usable.isEmpty()) {
             return -1;
         }
-        Identifier id = usable.get(mob.getRandom().nextInt(usable.size()));
-        Spell spell = SpellRegistry.getSpell(id);
-        Spell.Release.Target.Type type = spell.release.target.type;
-        SpellInfo info = new SpellInfo(spell, id);
-        SpellHelper.ImpactContext context = new SpellHelper.ImpactContext()
-                .power(SpellPower.getSpellPower(spell.school, mob))
-                .position(mob.getPos())
-                .target(SpellHelper.impactTargetingMode(spell));
+        SpellInfo info = usable.get(mob.getRandom().nextInt(usable.size()));
+        Spell spell = info.spell();
         mob.getLookControl().lookAt(target);
-        switch (type) {
-            case PROJECTILE -> SpellHelper.shootProjectile(world, mob, target, info, context);
-            case METEOR -> SpellHelper.fallProjectile(world, mob, target, info, context);
-            case CLOUD -> SpellHelper.placeCloud(world, mob, info, context);
-            case SELF -> SpellHelper.performImpacts(world, mob, mob, mob, info, context);
-            case CURSOR, BEAM -> SpellHelper.performImpacts(world, mob, target, mob, info, context);
-            case AREA -> {
-                for (Entity hit : TargetHelper.targetsFromArea(mob, spell.range, spell.release.target.area, e -> e instanceof LivingEntity && !mob.isTeammate(e))) {
-                    SpellHelper.performImpacts(world, mob, hit, mob, info, context.position(mob.getPos().add(0, mob.getHeight() / 2, 0)));
+        if (shootsArrow(spell)) {
+            shootArrows(world, (MinibossEntity) mob, target, info);
+        } else {
+            SpellHelper.ImpactContext context = new SpellHelper.ImpactContext()
+                    .power(SpellPower.getSpellPower(spell.school, mob))
+                    .position(mob.getPos())
+                    .target(SpellHelper.impactTargetingMode(spell));
+            switch (spell.release.target.type) {
+                case PROJECTILE -> SpellHelper.shootProjectile(world, mob, target, info, context);
+                case METEOR -> SpellHelper.fallProjectile(world, mob, target, info, context);
+                case CLOUD -> SpellHelper.placeCloud(world, mob, info, context);
+                case SELF -> SpellHelper.performImpacts(world, mob, mob, mob, info, context);
+                case CURSOR, BEAM -> SpellHelper.performImpacts(world, mob, target, mob, info, context);
+                case AREA -> {
+                    for (Entity hit : TargetHelper.targetsFromArea(mob, spell.range, spell.release.target.area, e -> e instanceof LivingEntity && !mob.isTeammate(e))) {
+                        SpellHelper.performImpacts(world, mob, hit, mob, info, context.position(mob.getPos().add(0, mob.getHeight() / 2, 0)));
+                    }
+                }
+                default -> {
+                    return -1;
                 }
             }
-            default -> {
-                return -1;
-            }
         }
-        ParticleHelper.sendBatches(mob, spell.release.particles);
-        SoundHelper.playSound(world, mob, spell.release.sound);
+        if (spell.release != null) {
+            ParticleHelper.sendBatches(mob, spell.release.particles);
+            SoundHelper.playSound(world, mob, spell.release.sound);
+        }
         if (settings.cooldown() != null) {
             return settings.cooldown();
         }
         return Math.max(20, Math.round(SpellHelper.getCooldownDuration(mob, spell, stack) * 20));
     }
 
+    private void shootArrows(ServerWorld world, MinibossEntity boss, LivingEntity target, SpellInfo info) {
+        boss.shootSpellArrow(target, info);
+        Spell.Release release = info.spell().release;
+        if (release == null || release.target.shoot_arrow == null) {
+            return;
+        }
+        Spell.LaunchProperties launch = release.target.shoot_arrow.launch_properties;
+        for (int i = 1; i <= launch.extra_launch_count; i++) {
+            ((WorldScheduler) world).schedule(i * launch.extra_launch_delay, () -> {
+                if (boss.isAlive() && target.isAlive()) {
+                    boss.shootSpellArrow(target, info);
+                }
+            });
+        }
+    }
+
     private boolean canCast(Spell spell, LivingEntity target) {
+        if (heals(spell)) {
+            return false;
+        }
+        if (shootsArrow(spell)) {
+            return mob instanceof MinibossEntity boss && boss.shootsSpellArrows() && mob.canSee(target);
+        }
         if (spell.release == null || spell.release.custom_impact) {
             return false;
         }
@@ -188,6 +213,23 @@ public class HeldAbilities {
             return false;
         }
         return type != Spell.Release.Target.Type.BEAM && type != Spell.Release.Target.Type.CURSOR || mob.canSee(target);
+    }
+
+    private static boolean shootsArrow(Spell spell) {
+        return spell.mode == Spell.Mode.ITEM_USE && spell.arrow_perks != null
+                || spell.release != null && spell.release.target != null && spell.release.target.type == Spell.Release.Target.Type.SHOOT_ARROW;
+    }
+
+    private static boolean heals(Spell spell) {
+        if (spell.impact == null) {
+            return false;
+        }
+        for (Spell.Impact impact : spell.impact) {
+            if (impact.action != null && impact.action.type == Spell.Impact.Action.Type.HEAL) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void write(NbtCompound nbt) {
@@ -206,25 +248,27 @@ public class HeldAbilities {
         return entry == null ? AbilitySettings.DEFAULT : entry.ability();
     }
 
-    private static int swordCooldown(WeaponAbilityContext context, AbilitySettings settings) {
-        return settings.cooldown() != null ? settings.cooldown() : SimplySwordsAPI.getWeaponAbilityCooldownTicks(context);
+    private int swordCooldown(ServerWorld world, ItemStack stack, Hand hand, @Nullable LivingEntity target, AbilitySettings settings) {
+        return settings.cooldown() != null ? settings.cooldown() : SimplySwords.cooldown(world, mob, stack, hand, target);
     }
 
     private static long readyTime(ServerWorld world, int ticks) {
         return world.getTime() + Math.round(ticks * RPGMinibossesEntities.config.abilityCooldownMultiplier);
     }
 
-    private List<String> spellsOf(ItemStack stack) {
+    private List<Identifier> spellsOf(ItemStack stack) {
         SpellContainer container = SpellContainerHelper.containerFromItemStack(stack);
-        return container == null || container.spell_ids == null ? List.of() : container.spell_ids;
-    }
-
-    private WeaponAbilityContext context(ServerWorld world, ItemStack stack, Hand hand, @Nullable LivingEntity target) {
-        return WeaponAbilityContext.of(world, stack, mob, null, target, hand, WeaponAbilityActivationSource.MOB);
+        if (container == null) {
+            return List.of();
+        }
+        if ((container.spell_ids == null || container.spell_ids.isEmpty()) && container.pool != null && !container.pool.isEmpty()) {
+            return SpellRegistry.spellPool(new Identifier(container.pool)).spellIds();
+        }
+        return container.spell_ids == null ? List.of() : container.spell_ids.stream().map(Identifier::new).toList();
     }
 
     private static boolean isSword(ItemStack stack) {
-        return stack.getItem() instanceof UniqueWeaponActiveAbility;
+        return Loadouts.SIMPLY_SWORDS && SimplySwords.isUnique(stack);
     }
 
     private static EquipmentSlot slot(Hand hand) {

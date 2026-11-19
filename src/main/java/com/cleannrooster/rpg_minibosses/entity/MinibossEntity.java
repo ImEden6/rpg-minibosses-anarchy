@@ -7,6 +7,7 @@ import com.cleannrooster.rpg_minibosses.loadout.HeldAbilities;
 import com.cleannrooster.rpg_minibosses.loadout.Loadout;
 import com.cleannrooster.rpg_minibosses.loadout.LoadoutEntry;
 import com.cleannrooster.rpg_minibosses.loadout.Loadouts;
+import com.cleannrooster.rpg_minibosses.loadout.SimplySwords;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -85,8 +86,8 @@ import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.village.*;
 import net.minecraft.world.*;
 import net.spell_engine.api.effect.Synchronized;
-import net.sweenus.simplyswords.api.AwakeningApi;
 import net.spell_engine.api.spell.Sound;
+import net.spell_engine.api.spell.SpellInfo;
 import net.spell_engine.utils.SoundHelper;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.Nullable;
@@ -505,6 +506,11 @@ public class MinibossEntity extends PathAwareEntity implements Tameable, GeoEnti
     public boolean canHold(EquipmentSlot slot, ItemStack stack){
         return true;
     }
+    public boolean shootsSpellArrows(){
+        return false;
+    }
+    public void shootSpellArrow(LivingEntity target, SpellInfo info){
+    }
 
     @Override
     protected float getDropChance(EquipmentSlot slot) {
@@ -522,8 +528,10 @@ public class MinibossEntity extends PathAwareEntity implements Tameable, GeoEnti
 
     @Override
     protected void dropEquipment(DamageSource source, int lootingMultiplier, boolean allowDrops) {
-        AwakeningApi.setLevel(this.getMainHandStack(), 0);
-        AwakeningApi.setLevel(this.getOffHandStack(), 0);
+        if (Loadouts.SIMPLY_SWORDS) {
+            SimplySwords.putToSleep(this.getMainHandStack());
+            SimplySwords.putToSleep(this.getOffHandStack());
+        }
         super.dropEquipment(source, lootingMultiplier, allowDrops);
     }
 

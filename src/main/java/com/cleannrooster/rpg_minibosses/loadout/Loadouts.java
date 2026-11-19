@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.EntityType;
 import net.minecraft.registry.Registries;
 import net.minecraft.resource.Resource;
@@ -18,6 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Loadouts implements SimpleSynchronousResourceReloadListener {
+    public static final boolean SIMPLY_SWORDS = FabricLoader.getInstance().isModLoaded("simplyswords");
     private static final String FOLDER = "miniboss_loadouts";
     private static Map<Identifier, Loadout> loadouts = Map.of();
 
