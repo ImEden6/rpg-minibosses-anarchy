@@ -13,6 +13,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.registry.Registries;
+import net.minecraft.util.Identifier;
 
 import java.util.Set;
 
@@ -23,6 +24,7 @@ public class RenderLayerItemMinibossEntity<T extends MinibossEntity> extends Blo
     private static final String LEFT_HAND = "leftItem";
     private static final String RIGHT_HAND = "itemBone";
     private static final Set<String> BIG_MODELS = Set.of("simplyswords", "rogues", "paladins", "wizards", "archers", "death_knights", "spellbladenext");
+    private static final Set<String> SMALL_MODELS = Set.of("dagger", "sickle", "wand", "bow", "orb");
     @Override
     protected ItemStack getStackForBone(GeoBone bone, MinibossEntity animatable) {
         // Retrieve the items in the entity's hands for the relevant bone
@@ -49,7 +51,8 @@ public class RenderLayerItemMinibossEntity<T extends MinibossEntity> extends Blo
         if(animatable instanceof ArtilleristEntity && stack.isOf(Items.CROSSBOW)){
             return;
         }
-        boolean bigModel = BIG_MODELS.contains(Registries.ITEM.getId(stack.getItem()).getNamespace());
+        Identifier id = Registries.ITEM.getId(stack.getItem());
+        boolean bigModel = BIG_MODELS.contains(id.getNamespace()) && SMALL_MODELS.stream().noneMatch(id.getPath()::contains);
         if(animatable instanceof JuggernautEntity){
             poseStack.translate(0,3/16F,-3/16F);
             if(!bigModel) {
