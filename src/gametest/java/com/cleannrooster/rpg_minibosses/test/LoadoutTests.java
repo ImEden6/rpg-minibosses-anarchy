@@ -13,6 +13,7 @@ import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.ItemEntity;
+import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.item.ItemStack;
@@ -29,9 +30,13 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.spell_power.api.SpellSchools;
+import net.spell_engine.api.spell.SpellContainer;
+import net.spell_engine.internals.SpellContainerHelper;
 import net.minecraft.util.math.random.Random;
 import net.sweenus.simplyswords.api.AwakeningApi;
 import net.sweenus.simplyswords.world.WeaponAbilityCooldownManager;
+
+import java.util.List;
 
 public class LoadoutTests implements FabricGameTest {
 
@@ -197,6 +202,93 @@ public class LoadoutTests implements FabricGameTest {
         HeldAbilities abilities = new HeldAbilities(mob);
         abilities.tick(world, loadout);
         check(abilities.readyAt(Hand.MAIN_HAND) == world.getTime() + 40, "self spell should cast with the target past spell range");
+        context.complete();
+    }
+
+    @GameTest(templateName = EMPTY_STRUCTURE)
+    public void itemSpellsUsedWithoutEntrySpells(TestContext context) {
+        ServerWorld world = context.getWorld();
+        ItemStack stick = new ItemStack(Items.STICK);
+        SpellContainerHelper.addContainerToItemStack(new SpellContainer(false, null, 1, List.of("rpg-minibosses-gametest:self_buff")), stick);
+        MobEntity mob = fighter(context, stick, 4);
+        HeldAbilities abilities = new HeldAbilities(mob);
+        abilities.tick(world, loadout("{\"mainhand\":[{\"item\":\"minecraft:stick\",\"ability\":{\"chance\":1,\"interval\":1,\"cooldown\":40}}]}"));
+        check(abilities.readyAt(Hand.MAIN_HAND) == world.getTime() + 40, "item spell did not cast");
+        check(mob.hasStatusEffect(StatusEffects.ABSORPTION), "item spell had no effect");
+        context.complete();
+    }
+
+    @GameTest(templateName = EMPTY_STRUCTURE)
+    public void spellOutOfRangeKeepsCooldown(TestContext context) {
+        ServerWorld world = context.getWorld();
+        Loadout loadout = loadout("{\"mainhand\":[{\"item\":\"minecraft:stick\",\"spells\":[\"rpg-minibosses-gametest:beam_test\"],\"ability\":{\"chance\":1,\"interval\":1,\"cooldown\":40,\"max_range\":64}}]}");
+        MobEntity mob = fighter(context, new ItemStack(Items.STICK), 20);
+        HeldAbilities abilities = new HeldAbilities(mob);
+        abilities.tick(world, loadout);
+        check(abilities.readyAt(Hand.MAIN_HAND) == 0, "cast past spell range");
+        mob.getTarget().refreshPositionAndAngles(mob.getX() + 4, mob.getY(), mob.getZ(), 0, 0);
+        abilities.tick(world, loadout);
+        check(abilities.readyAt(Hand.MAIN_HAND) == world.getTime() + 40, "should cast once the target is in range");
+        context.complete();
+    }
+
+    @GameTest(templateName = EMPTY_STRUCTURE)
+    public void customImpactSpellSkipped(TestContext context) {
+        ServerWorld world = context.getWorld();
+        MobEntity mob = fighter(context, new ItemStack(Items.STICK), 2);
+        HeldAbilities abilities = new HeldAbilities(mob);
+        abilities.tick(world, spellLoadout("rpg-minibosses:dark_matter"));
+        check(abilities.readyAt(Hand.MAIN_HAND) == 0, "custom_impact spell should not cast");
+        context.complete();
+    }
+
+    @GameTest(templateName = EMPTY_STRUCTURE)
+    public void spellCooldownMultiplier(TestContext context) {
+        ServerWorld world = context.getWorld();
+        MobEntity mob = fighter(context, new ItemStack(Items.STICK), 4);
+        HeldAbilities abilities = new HeldAbilities(mob);
+        float multiplier = RPGMinibossesEntities.config.abilityCooldownMultiplier;
+        RPGMinibossesEntities.config.abilityCooldownMultiplier = 2;
+        try {
+            abilities.tick(world, spellLoadout("rpg-minibosses-gametest:self_buff"));
+        } finally {
+            RPGMinibossesEntities.config.abilityCooldownMultiplier = multiplier;
+        }
+        check(abilities.readyAt(Hand.MAIN_HAND) == world.getTime() + 80, "multiplier 2 should double 40 to 80, got " + (abilities.readyAt(Hand.MAIN_HAND) - world.getTime()));
+        context.complete();
+    }
+
+    @GameTest(templateName = EMPTY_STRUCTURE)
+    public void spellsOffWithHeldAbilitiesOff(TestContext context) {
+        ServerWorld world = context.getWorld();
+        MobEntity mob = fighter(context, new ItemStack(Items.STICK), 4);
+        HeldAbilities abilities = new HeldAbilities(mob);
+        boolean enabled = RPGMinibossesEntities.config.heldAbilities;
+        RPGMinibossesEntities.config.heldAbilities = false;
+        try {
+            abilities.tick(world, spellLoadout("rpg-minibosses-gametest:self_buff"));
+        } finally {
+            RPGMinibossesEntities.config.heldAbilities = enabled;
+        }
+        check(abilities.readyAt(Hand.MAIN_HAND) == 0, "spell cast with heldAbilities off");
+        check(!mob.hasStatusEffect(StatusEffects.ABSORPTION), "spell effect applied with heldAbilities off");
+        context.complete();
+    }
+
+    @GameTest(templateName = EMPTY_STRUCTURE)
+    public void noTargetNoCast(TestContext context) {
+        ServerWorld world = context.getWorld();
+        Loadout loadout = spellLoadout("rpg-minibosses-gametest:self_buff");
+        MobEntity lonely = fighter(context, new ItemStack(Items.STICK), 4);
+        lonely.setTarget(null);
+        HeldAbilities abilities = new HeldAbilities(lonely);
+        abilities.tick(world, loadout);
+        check(abilities.readyAt(Hand.MAIN_HAND) == 0, "cast with no target");
+        MobEntity mob = fighter(context, new ItemStack(Items.STICK), 4);
+        mob.getTarget().kill();
+        abilities = new HeldAbilities(mob);
+        abilities.tick(world, loadout);
+        check(abilities.readyAt(Hand.MAIN_HAND) == 0, "cast at a dead target");
         context.complete();
     }
 
