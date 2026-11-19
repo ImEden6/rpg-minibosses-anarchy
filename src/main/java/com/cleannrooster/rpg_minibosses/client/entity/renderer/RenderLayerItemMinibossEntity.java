@@ -14,12 +14,15 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.registry.Registries;
 
+import java.util.Set;
+
 public class RenderLayerItemMinibossEntity<T extends MinibossEntity> extends BlockAndItemGeoLayer<MinibossEntity> {
     public RenderLayerItemMinibossEntity(GeoRenderer<MinibossEntity> entityRendererIn) {
         super(entityRendererIn);
     }
     private static final String LEFT_HAND = "leftItem";
     private static final String RIGHT_HAND = "itemBone";
+    private static final Set<String> BIG_MODELS = Set.of("simplyswords", "rogues", "paladins", "wizards", "archers", "death_knights", "spellbladenext");
     @Override
     protected ItemStack getStackForBone(GeoBone bone, MinibossEntity animatable) {
         // Retrieve the items in the entity's hands for the relevant bone
@@ -46,16 +49,16 @@ public class RenderLayerItemMinibossEntity<T extends MinibossEntity> extends Blo
         if(animatable instanceof ArtilleristEntity && stack.isOf(Items.CROSSBOW)){
             return;
         }
-        boolean simplySwords = Registries.ITEM.getId(stack.getItem()).getNamespace().equals("simplyswords");
+        boolean bigModel = BIG_MODELS.contains(Registries.ITEM.getId(stack.getItem()).getNamespace());
         if(animatable instanceof JuggernautEntity){
             poseStack.translate(0,3/16F,-3/16F);
-            if(!simplySwords) {
+            if(!bigModel) {
                 poseStack.scale(2F, 2F, 2F);
             }
         }
         if(animatable instanceof TemplarEntity){
             poseStack.translate(0,3/16F,-3/16F);
-            if(!simplySwords) {
+            if(!bigModel) {
                 poseStack.scale(1.5F, 1.5F, 1.5F);
             }
         }
