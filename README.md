@@ -110,4 +110,4 @@ Each one keeps its old vanilla weapon as a low-weight fallback, which is also al
 
 Stormbringer also parries when hit, and a parry puts the same cooldown on it.
 
-Two server config options cover all of this. `heldAbilities` turns held abilities off completely. `abilityCooldownMultiplier` scales every cooldown, so `0.5` brings abilities back twice as fast.
+Three server config options cover all of this. `heldAbilities` turns held abilities off completely. `abilityCooldownMultiplier` scales every cooldown, so `0.5` brings abilities back twice as fast. `spellAnimations` off makes bosses cast held spells right away, with none of their own swings, waves or slams and no wait for the hit frame.

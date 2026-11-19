@@ -9,6 +9,7 @@
 - Spell books with no spells of their own cast from their pool.
 - Mercenaries cast archery spells like Barrage and Power Shot by firing an arrow that carries the spell. Greater ones can also roll an Archers Expansion pool.
 - Bosses play their own moves when they cast a held spell. Strikes use their swings, area and channeled spells use the Archmage's wave or the Juggernaut's slam, and the Mercenary draws a heavy shot. The spell lands on the hit frame, like their normal attacks. Spells with no matching move, like shouts and whirlwind, cast with no animation.
+- Config option `spellAnimations` to turn those off.
 
 ### Changed
 - Simply Swords is optional now. Without it, unique abilities and parrying are off and Simply Swords entries roll nothing.
