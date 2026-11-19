@@ -5,6 +5,7 @@
 	"mixins": [
 		"DefaultLootMixin",
 		"PatrolSpawnerMixin",
+		"RemorselessWinterMixin",
 		"TargetHelperMixin"
 
 	],
