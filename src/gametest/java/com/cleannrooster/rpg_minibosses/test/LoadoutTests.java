@@ -25,6 +25,9 @@ import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.Items;
+import net.minecraft.loot.LootTable;
+import net.minecraft.loot.context.LootContextParameterSet;
+import net.minecraft.loot.context.LootContextTypes;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.tag.ItemTags;
@@ -37,6 +40,8 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.spell_power.api.SpellSchools;
+import net.spell_engine.api.loot.LootConfigV2;
+import net.spell_engine.api.loot.LootHelper;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.SpellContainer;
 import net.spell_engine.internals.SpellContainerHelper;
@@ -45,7 +50,9 @@ import net.minecraft.util.math.random.Random;
 import net.sweenus.simplyswords.api.AwakeningApi;
 import net.sweenus.simplyswords.world.WeaponAbilityCooldownManager;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 public class LoadoutTests implements FabricGameTest {
@@ -466,6 +473,35 @@ public class LoadoutTests implements FabricGameTest {
             check(AwakeningApi.getLevel(dropped.getStack()) == 0, "dropped sword awakening " + AwakeningApi.getLevel(dropped.getStack()));
             context.complete();
         });
+    }
+
+    @GameTest(templateName = EMPTY_STRUCTURE)
+    public void tierLootOffByDefault(TestContext context) {
+        check(!RPGMinibossesEntities.config.rpgSeriesLoot, "rpgSeriesLoot defaults on");
+        check(tierLoot(context, "rpg-minibosses", false).isEmpty(), "boss table got tier loot with rpgSeriesLoot off");
+        check(tierLoot(context, "minecraft", false).size() == 1, "other tables lost their tier loot");
+        context.complete();
+    }
+
+    @GameTest(templateName = EMPTY_STRUCTURE)
+    public void tierLootWhenEnabled(TestContext context) {
+        check(tierLoot(context, "rpg-minibosses", true).size() == 1, "boss table missing tier loot with rpgSeriesLoot on");
+        context.complete();
+    }
+
+    private static List<ItemStack> tierLoot(TestContext context, String namespace, boolean enabled) {
+        Identifier id = new Identifier(namespace, "entities/tier_loot_test");
+        LootConfigV2 config = new LootConfigV2();
+        config.injectors.put(id.toString(), new LootConfigV2.Pool().rolls(1).add("minecraft:diamond"));
+        LootTable.Builder builder = LootTable.builder();
+        boolean was = RPGMinibossesEntities.config.rpgSeriesLoot;
+        RPGMinibossesEntities.config.rpgSeriesLoot = enabled;
+        try {
+            LootHelper.configureV2(id, builder, config, new HashMap<>(Map.of("minecraft:diamond", Items.DIAMOND)));
+        } finally {
+            RPGMinibossesEntities.config.rpgSeriesLoot = was;
+        }
+        return builder.build().generateLoot(new LootContextParameterSet.Builder(context.getWorld()).build(LootContextTypes.EMPTY));
     }
 
     private static ItemStack unique(String id) {
