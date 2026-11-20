@@ -3,7 +3,7 @@
 ## [Unreleased]
 
 ### Added
-- Rogues can roll Simply Swords chakrams and warriors can roll its scythes, and greater Templars and Juggernauts can roll Spellblade Next's Hexblade and Pillar of the Monkey King.
+- Rogues can roll Simply Swords chakrams and warriors can roll its scythes, and greater Templars and Juggernauts can roll Spellblade Next's Pillar of the Monkey King, which casts its own spells.
 
 ## [1.2.0] - 2026-11-19
 

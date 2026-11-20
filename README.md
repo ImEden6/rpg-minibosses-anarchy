@@ -96,7 +96,7 @@ Every adventurer except Magus Prime rolls a weapon from an RPG Series class, and
 | `death_knight_*` | Death Knights runeblades and runeaxes | `death_knights:blood`, `frost`, `unholy` |
 | `battlemage_<school>` | Spellblade blades, claymores and orbs | `spellbladenext:<school>_battlemage` |
 | `archer_*` | bows and crossbows, Archers longbows, shortbows, heavy and rapid crossbows | `archers:archer` |
-| `uniques_heavy`, `uniques_light` | Simply Swords uniques, plus the Hexblade and Pillar of the Monkey King from Spellblade Next in `uniques_heavy` | their own ability |
+| `uniques_heavy`, `uniques_light` | Simply Swords uniques, plus Spellblade Next's Pillar of the Monkey King in `uniques_heavy` | their own ability |
 
 | boss | rolls from |
 |---|---|
