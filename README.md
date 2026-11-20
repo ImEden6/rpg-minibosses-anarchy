@@ -88,15 +88,15 @@ Every adventurer except Magus Prime rolls a weapon from an RPG Series class, and
 
 | tag | weapons | spell_pool |
 |---|---|---|
-| `rogue_*` | Rogues daggers and sickles, Simply Swords rapiers, sais, cutlasses, katanas, twinblades | `rogues:rogue` |
-| `warrior_*` | Rogues double axes and glaives, Archers spears, Simply Swords greataxes, glaives, halberds, warglaives, spears | `rogues:warrior` |
+| `rogue_*` | Rogues daggers and sickles, Simply Swords rapiers, sais, cutlasses, katanas, twinblades, chakrams | `rogues:rogue` |
+| `warrior_*` | Rogues double axes and glaives, Archers spears, Simply Swords greataxes, glaives, halberds, warglaives, spears, scythes | `rogues:warrior` |
 | `paladin_*` | Paladins claymores, great hammers, maces, Simply Swords claymores, greathammers, longswords | `paladins:paladin` |
 | `priest_*` | Paladins holy wands and staffs | `paladins:priest` |
 | `wizard_<school>_*` | Wizards wands and staffs of that school | `wizards:<school>` |
 | `death_knight_*` | Death Knights runeblades and runeaxes | `death_knights:blood`, `frost`, `unholy` |
 | `battlemage_<school>` | Spellblade blades, claymores and orbs | `spellbladenext:<school>_battlemage` |
 | `archer_*` | bows and crossbows, Archers longbows, shortbows, heavy and rapid crossbows | `archers:archer` |
-| `uniques_heavy`, `uniques_light` | Simply Swords uniques | their own ability |
+| `uniques_heavy`, `uniques_light` | Simply Swords uniques, plus the Hexblade and Pillar of the Monkey King from Spellblade Next in `uniques_heavy` | their own ability |
 
 | boss | rolls from |
 |---|---|
