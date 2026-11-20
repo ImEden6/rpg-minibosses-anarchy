@@ -1,9 +1,9 @@
 {
   "mainhand": [
     { "tag": "rpg-minibosses:loadout/rogue_greater", "spell_pool": "rogues:rogue", "weight": 4 },
-    { "tag": "rpg-minibosses:loadout/battlemage_arcane", "spell_pool": "spellbladenext:arcane_battlemage", "weight": 1 },
-    { "tag": "rpg-minibosses:loadout/battlemage_fire", "spell_pool": "spellbladenext:fire_battlemage", "weight": 1 },
-    { "tag": "rpg-minibosses:loadout/battlemage_frost", "spell_pool": "spellbladenext:frost_battlemage", "weight": 1 },
+    { "tag": "rpg-minibosses:loadout/battlemage_arcane", "spell_pool": ["spellbladenext:arcane_battlemage", "spellbladenext:runic_echoes"], "weight": 1 },
+    { "tag": "rpg-minibosses:loadout/battlemage_fire", "spell_pool": ["spellbladenext:fire_battlemage", "spellbladenext:phoenix"], "weight": 1 },
+    { "tag": "rpg-minibosses:loadout/battlemage_frost", "spell_pool": ["spellbladenext:frost_battlemage", "spellbladenext:deathchill"], "weight": 1 },
     { "tag": "rpg-minibosses:loadout/uniques_light", "weight": 2 },
     { "item": "minecraft:iron_sword", "weight": 1 }
   ],

@@ -94,7 +94,7 @@ Every adventurer except Magus Prime rolls a weapon from an RPG Series class, and
 | `priest_*` | Paladins holy wands and staffs | `paladins:priest` |
 | `wizard_<school>_*` | Wizards wands and staffs of that school | `wizards:<school>` |
 | `death_knight_*` | Death Knights runeblades and runeaxes | `death_knights:blood`, `frost`, `unholy` |
-| `battlemage_<school>` | Spellblade blades, claymores and orbs | `spellbladenext:<school>_battlemage` |
+| `battlemage_<school>` | Spellblade blades, claymores and orbs | `spellbladenext:<school>_battlemage`, plus `runic_echoes` (arcane), `phoenix` (fire) or `deathchill` (frost) |
 | `archer_*` | bows and crossbows, Archers longbows, shortbows, heavy and rapid crossbows | `archers:archer` |
 | `uniques_heavy`, `uniques_light` | Simply Swords uniques, plus Spellblade Next's Pillar of the Monkey King in `uniques_heavy` | their own ability |
 

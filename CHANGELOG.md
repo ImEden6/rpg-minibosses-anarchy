@@ -12,6 +12,7 @@
 - Config option `spellAnimations` to turn those off.
 - Rogues can roll Simply Swords chakrams and warriors can roll its scythes, and greater Templars and Juggernauts can roll Spellblade Next's Pillar of the Monkey King, which casts its own spells.
 - Sword on a Stick is in both unique pools, so any greater Templar, Juggernaut or Trickster can show up with it.
+- Battlemages also cast from the tier 3 Spellblade books: Runic Echoes for arcane, Phoenix for fire, Deathchill for frost.
 
 ### Changed
 - Simply Swords is optional now. Without it, unique abilities and parrying are off and Simply Swords entries roll nothing.
