@@ -1,12 +1,6 @@
 # Changelog
 
-## [Unreleased]
-
-### Added
-- Rogues can roll Simply Swords chakrams and warriors can roll its scythes, and greater Templars and Juggernauts can roll Spellblade Next's Pillar of the Monkey King, which casts its own spells.
-- Sword on a Stick is in both unique pools, so any greater Templar, Juggernaut or Trickster can show up with it.
-
-## [1.2.0] - 2026-11-19
+## [1.2.0] - 2026-11-20
 
 ### Added
 - Mercenary loadouts can give it any bow or crossbow. It shoots with the weapon's enchantments and Ranged Weapon API damage, and the held weapon shows instead of its built-in crossbow.
@@ -16,6 +10,8 @@
 - Mercenaries cast archery spells like Barrage and Power Shot by firing an arrow that carries the spell. Greater ones can also roll an Archers Expansion pool.
 - Bosses play their own moves when they cast a held spell. Strikes use their swings, area and channeled spells use the Archmage's wave or the Juggernaut's slam, and the Mercenary draws a heavy shot. The spell lands on the hit frame, like their normal attacks. Spells with no matching move, like shouts and whirlwind, cast with no animation.
 - Config option `spellAnimations` to turn those off.
+- Rogues can roll Simply Swords chakrams and warriors can roll its scythes, and greater Templars and Juggernauts can roll Spellblade Next's Pillar of the Monkey King, which casts its own spells.
+- Sword on a Stick is in both unique pools, so any greater Templar, Juggernaut or Trickster can show up with it.
 
 ### Changed
 - Simply Swords is optional now. Without it, unique abilities and parrying are off and Simply Swords entries roll nothing.
