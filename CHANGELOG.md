@@ -16,6 +16,7 @@
 - Bosses never cast spells that heal.
 - Bosses don't cast held spells in the middle of one of their own moves.
 - Loadout entries whose tag is empty get skipped instead of leaving the hand empty.
+- Bosses don't drop RPG Series tier loot anymore. Turn `rpgSeriesLoot` on in the config to get it back. With it on, the drops still come from `config/rpg_series/loot_v2.json`.
 
 ### Fixed
 - Simply Swords and RPG Series weapons held by Juggernauts and Templars aren't scaled up anymore. Their models are already big, so they looked huge.
