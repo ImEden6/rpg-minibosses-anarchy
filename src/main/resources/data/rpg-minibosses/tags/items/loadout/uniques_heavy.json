@@ -20,6 +20,8 @@
     { "id": "simplyswords:molten_edge", "required": false },
     { "id": "simplyswords:livyatan", "required": false },
     { "id": "simplyswords:bramblethorn", "required": false },
-    { "id": "simplyswords:caelestis", "required": false }
+    { "id": "simplyswords:caelestis", "required": false },
+    { "id": "spellbladenext:hexbladeitem", "required": false },
+    { "id": "spellbladenext:monkeystaff", "required": false }
   ]
 }
