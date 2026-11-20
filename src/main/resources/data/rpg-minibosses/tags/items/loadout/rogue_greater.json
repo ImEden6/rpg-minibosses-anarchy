@@ -22,6 +22,9 @@
     { "id": "simplyswords:runic_katana", "required": false },
     { "id": "simplyswords:diamond_twinblade", "required": false },
     { "id": "simplyswords:netherite_twinblade", "required": false },
-    { "id": "simplyswords:runic_twinblade", "required": false }
+    { "id": "simplyswords:runic_twinblade", "required": false },
+    { "id": "simplyswords:diamond_chakram", "required": false },
+    { "id": "simplyswords:netherite_chakram", "required": false },
+    { "id": "simplyswords:runic_chakram", "required": false }
   ]
 }
