@@ -4,6 +4,7 @@
 	"compatibilityLevel": "JAVA_17",
 	"mixins": [
 		"DefaultLootMixin",
+		"LootHelperMixin",
 		"PatrolSpawnerMixin",
 		"RemorselessWinterMixin",
 		"TargetHelperMixin"

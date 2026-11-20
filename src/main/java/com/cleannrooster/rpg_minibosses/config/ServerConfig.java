@@ -242,6 +242,8 @@ public class ServerConfig  implements ConfigData {
     public float lavosHornDropChanceLesser = 0F;
     @Comment("Chance that a cultist drops each item it holds or wears. Above 1 the drop is guaranteed and undamaged. 0 keeps equipment on the corpse. The original mod used 100.")
     public float equipmentDropChance = 0F;
+    @Comment("Cultists drop RPG Series tier loot (weapons, armor, accessories) from config/rpg_series/loot_v2.json. The original mod did.")
+    public boolean rpgSeriesLoot = false;
     @Comment("Lesser cultists spawn naturally in biomes and join patrols")
     public boolean lesserNaturalSpawns = true;
     @Comment("Greater cultists spawn naturally in biomes and join patrols")
