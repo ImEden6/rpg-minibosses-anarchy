@@ -26,6 +26,9 @@
     { "id": "simplyswords:runic_warglaive", "required": false },
     { "id": "simplyswords:diamond_spear", "required": false },
     { "id": "simplyswords:netherite_spear", "required": false },
-    { "id": "simplyswords:runic_spear", "required": false }
+    { "id": "simplyswords:runic_spear", "required": false },
+    { "id": "simplyswords:diamond_scythe", "required": false },
+    { "id": "simplyswords:netherite_scythe", "required": false },
+    { "id": "simplyswords:runic_scythe", "required": false }
   ]
 }

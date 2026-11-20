@@ -25,6 +25,9 @@
     { "id": "simplyswords:diamond_warglaive", "required": false },
     { "id": "simplyswords:iron_spear", "required": false },
     { "id": "simplyswords:gold_spear", "required": false },
-    { "id": "simplyswords:diamond_spear", "required": false }
+    { "id": "simplyswords:diamond_spear", "required": false },
+    { "id": "simplyswords:iron_scythe", "required": false },
+    { "id": "simplyswords:gold_scythe", "required": false },
+    { "id": "simplyswords:diamond_scythe", "required": false }
   ]
 }
