@@ -4,6 +4,7 @@
 
 ### Added
 - Rogues can roll Simply Swords chakrams and warriors can roll its scythes, and greater Templars and Juggernauts can roll Spellblade Next's Pillar of the Monkey King, which casts its own spells.
+- Sword on a Stick is in both unique pools, so any greater Templar, Juggernaut or Trickster can show up with it.
 
 ## [1.2.0] - 2026-11-19
 

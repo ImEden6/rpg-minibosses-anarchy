@@ -31,6 +31,7 @@
     { "id": "simplyswords:slumbering_lichblade", "required": false },
     { "id": "simplyswords:waking_lichblade", "required": false },
     { "id": "simplyswords:awakened_lichblade", "required": false },
-    { "id": "simplyswords:dreadtide", "required": false }
+    { "id": "simplyswords:dreadtide", "required": false },
+    { "id": "simplyswords:sword_on_a_stick", "required": false }
   ]
 }

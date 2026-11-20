@@ -21,6 +21,7 @@
     { "id": "simplyswords:livyatan", "required": false },
     { "id": "simplyswords:bramblethorn", "required": false },
     { "id": "simplyswords:caelestis", "required": false },
-    { "id": "spellbladenext:monkeystaff", "required": false }
+    { "id": "spellbladenext:monkeystaff", "required": false },
+    { "id": "simplyswords:sword_on_a_stick", "required": false }
   ]
 }
