@@ -132,8 +132,8 @@ public class JuggernautEntity extends MinibossEntity{
             if(this.getTarget()  != null ) {
                 if (this.getTarget().distanceTo(this) > 4) {
                     this.getMoveControl().moveTo(this.getTarget().getX(), this.getTarget().getY(), this.getTarget().getZ(), 1F);
-                } else {
-                    ((MinibossMoveConrol)this.getMoveControl()).strafeTo(-1, this.getTarget().getPos().subtract(this.getPos()).crossProduct(new Vec3d(0, 1, 0)).dotProduct(this.getRotationVector()) > 0 ? -0.6F : 0.6F,0.25F);
+                } else if (this.getMoveControl() instanceof MinibossMoveConrol control) {
+                    control.strafeTo(-1, this.getTarget().getPos().subtract(this.getPos()).crossProduct(new Vec3d(0, 1, 0)).dotProduct(this.getRotationVector()) > 0 ? -0.6F : 0.6F,0.25F);
 
                 }
                 if (!this.getWorld().isClient() && slamtimer > 140 && !this.performing && this.getTarget() != null && this.isAttacking() && this.distanceTo(this.getTarget()) <= 3) {

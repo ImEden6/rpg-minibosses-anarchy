@@ -825,8 +825,8 @@ public class MagusPrimeEntity extends PathAwareEntity implements GeoEntity {
             return;
         }
         if(this.getTarget() != null) {
-            if(this.distanceTo(this.getTarget())< 8){
-                ((MinibossMoveConrol)this.getMoveControl()).strafeTo(-2, this.getTarget().getPos().subtract(this.getPos()).crossProduct(new Vec3d(0, 1, 0)).dotProduct(this.getRotationVector()) > 0 ? -0.6F : 0.6F,0.25F);
+            if(this.distanceTo(this.getTarget())< 8 && this.getMoveControl() instanceof MinibossMoveConrol control){
+                control.strafeTo(-2, this.getTarget().getPos().subtract(this.getPos()).crossProduct(new Vec3d(0, 1, 0)).dotProduct(this.getRotationVector()) > 0 ? -0.6F : 0.6F,0.25F);
             }
         }
         if(!this.getWorld().isClient() && this.getHealth()/this.getMaxHealth() < 0.25F && darkmatter > 400 && !this.performing && this.getTarget() != null ) {
