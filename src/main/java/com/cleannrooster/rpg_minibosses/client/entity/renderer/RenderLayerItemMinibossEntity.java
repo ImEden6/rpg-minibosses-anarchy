@@ -53,6 +53,12 @@ public class RenderLayerItemMinibossEntity<T extends MinibossEntity> extends Blo
             return;
         }
         if(animatable instanceof ArtilleristEntity){
+            // azurelib rotates the item bone twice (bone pass + layer), and the merc's bone is posed for its built-in crossbow, so strip both and use the vanilla hand turn
+            for(int i = 0; i < 2; i++) {
+                poseStack.multiply(RotationAxis.POSITIVE_X.rotation(-bone.getRotX()));
+                poseStack.multiply(RotationAxis.POSITIVE_Y.rotation(-bone.getRotY()));
+                poseStack.multiply(RotationAxis.POSITIVE_Z.rotation(-bone.getRotZ()));
+            }
             poseStack.multiply(RotationAxis.POSITIVE_X.rotationDegrees(-90));
         }
         Identifier id = Registries.ITEM.getId(stack.getItem());
