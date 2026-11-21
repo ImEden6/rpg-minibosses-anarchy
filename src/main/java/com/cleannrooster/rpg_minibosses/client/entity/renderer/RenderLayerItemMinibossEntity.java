@@ -14,6 +14,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.RotationAxis;
 
 import java.util.Set;
 
@@ -50,6 +51,9 @@ public class RenderLayerItemMinibossEntity<T extends MinibossEntity> extends Blo
                                       VertexConsumerProvider bufferSource, float partialTick, int packedLight, int packedOverlay) {
         if(animatable instanceof ArtilleristEntity && stack.isOf(Items.CROSSBOW)){
             return;
+        }
+        if(animatable instanceof ArtilleristEntity){
+            poseStack.multiply(RotationAxis.POSITIVE_X.rotationDegrees(-90));
         }
         Identifier id = Registries.ITEM.getId(stack.getItem());
         boolean bigModel = BIG_MODELS.contains(id.getNamespace()) && SMALL_MODELS.stream().noneMatch(id.getPath()::contains);
